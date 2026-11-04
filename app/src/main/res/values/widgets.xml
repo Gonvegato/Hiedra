@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Con el tema «como el sistema», el widget lleva los dos dibujos y se ve el que toca (0 visible, 2 oculto: el orden del atributo visibility) -->
+    <integer name="w_dia">0</integer>
+    <integer name="w_noche">2</integer>
+    <string name="w_jugando">Sigue jugando</string>
+    <string name="w_jugando_d">El juego al que estás jugando, con su portada y tus horas. Un toque y juegas.</string>
+    <string name="w_estante">Recientes</string>
+    <string name="w_estante_d">Tus últimos juegos en fila, como una estantería.</string>
+    <string name="w_portada">En portada</string>
+    <string name="w_portada_d">La portada de tu revista: tu juego de ahora, a toda página.</string>
+    <string name="w_siguiente">¿Y ahora qué?</string>
+    <string name="w_siguiente_d">Un juego pendiente para empezar hoy, con su portada. «Otro» para cambiar.</string>
+    <string name="w_marca">HIEDRA</string>
+    <string name="w_marca_d">La cabecera de Hiedra, sola sobre tu fondo. Un toque y estás en la portada.</string>
+    <string name="w_marcapapel">HIEDRA en papel</string>
+    <string name="w_marcapapel_d">La cabecera de Hiedra en su papel: el número del día y la fecha. Un toque y estás en la portada.</string>
+</resources>
