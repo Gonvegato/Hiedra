@@ -95,6 +95,7 @@ object Lanzar {
     }
 
     private fun lanzarYa(c: Context, j: Juego): String? {
+        var paqueteAbierto = ""
         val error: String? = try {
             val l = j.principal ?: return "«${j.titulo}» no se juega desde el móvil" + (if (j.plataforma.isNotBlank()) " (${j.plataforma})" else "") + ". Si tienes su ROM, su app o su web, añádela desde la ficha."
             when (l.tipo) {
@@ -102,20 +103,20 @@ object Lanzar {
                     if (!Archivos.tiene(l.clave)) return "Esta ROM está en otro de tus dispositivos: añádela aquí (mismo sistema y mismo nombre de archivo) y se unirá sola."
                     val e = elegir(c, j) ?: return "Hiedra no sabe lanzar «${l.sistema}»"
                     when (val r = e.resultado) {
-                        is Resultado.Ok -> { c.startActivity(aIntent(r.spec)); null }
+                        is Resultado.Ok -> { c.startActivity(aIntent(r.spec)); paqueteAbierto = r.spec.paquete; null }
                         is Resultado.Falta -> "${e.etiqueta}: ${r.motivo}"
                     }
                 }
                 TipoLanzador.APP -> {
                     val i = c.packageManager.getLaunchIntentForPackage(l.paquete)
-                    if (i == null) "Esa app ya no está instalada" else { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); c.startActivity(i); null }
+                    if (i == null) "Esa app ya no está instalada" else { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); c.startActivity(i); paqueteAbierto = l.paquete; null }
                 }
                 TipoLanzador.WEB -> { c.startActivity(WebJuegoActivity.intent(c, j)); null }
                 TipoLanzador.PC -> return "«${j.titulo}» es del PC: desde su ficha, «Jugar en el PC» o «Streaming»."
             }
         } catch (e: ActivityNotFoundException) { "No se pudo abrir: ¿sigue instalado el emulador?"
         } catch (e: SecurityException) { "Android no deja abrir esto: ${e.message}" }
-        if (error == null) Sesion.empezar(c, j)
+        if (error == null) Sesion.empezar(c, j, paqueteAbierto)
         return error
     }
 
@@ -162,18 +163,25 @@ object Sesion {
         return d.entries.sortedByDescending { it.key }.take(400).associate { it.key to it.value }
     }
 
-    fun empezar(c: Context, j: Juego) {
+    /** [paquete]: la app que se ha abierto (el emulador o el juego), para medir cuánto estuvo delante si hay permiso de uso. */
+    fun empezar(c: Context, j: Juego, paquete: String = "") {
         val k = if (j.estado == Estado.PENDIENTE) j.conEstado(Estado.JUGANDO) else j
         Biblioteca.poner(k.copy(ultima = System.currentTimeMillis(), propias = j.propias.copy(veces = j.propias.veces + 1)))
-        if (j.principal?.tipo != TipoLanzador.WEB) p(c).edit().putString("id", j.id).putLong("desde", System.currentTimeMillis()).apply()
+        if (j.principal?.tipo != TipoLanzador.WEB) p(c).edit().putString("id", j.id).putLong("desde", System.currentTimeMillis()).putString("paq", paquete).apply()
     }
 
-    /** Al volver a Hiedra: suma el tiempo de la sesión que había abierta. */
+    /** Sin permiso de uso: todo el rato hasta volver (como mucho 12 h). */
+    fun aOjo(desde: Long, ahora: Long): Long = (ahora - desde).coerceAtMost(12L * 3600_000)
+
+    /** Al volver a Hiedra: suma el tiempo de la sesión que había abierta (exacto si Android nos deja ver cuándo estuvo delante la app). */
     fun cerrar(c: Context) {
         val p = p(c); val id = p.getString("id", null) ?: return
-        val desde = p.getLong("desde", 0L); p.edit().clear().apply()
-        val ms = (System.currentTimeMillis() - desde).coerceAtMost(12L * 3600_000)
-        if (ms >= 20_000) Biblioteca.por(id)?.let { Biblioteca.poner(it.copy(propias = it.propias.copy(ms = it.propias.ms + ms, dias = conDias(it, System.currentTimeMillis(), ms)))) }
+        val desde = p.getLong("desde", 0L); val paq = p.getString("paq", "") ?: ""; p.edit().clear().apply()
+        val ahora = System.currentTimeMillis()
+        val exacto = Uso.tiempoDelante(c, paq, desde, ahora)
+        val ms = exacto?.ms ?: aOjo(desde, ahora)
+        val fin = exacto?.fin ?: ahora
+        if (ms >= 20_000) Biblioteca.por(id)?.let { Biblioteca.poner(it.copy(propias = it.propias.copy(ms = it.propias.ms + ms, dias = conDias(it, fin, ms)))) }
         // Volver de jugar: si el guardado de este móvil ha cambiado, se sube a la nube
         Biblioteca.por(id)?.takeIf { NubeP.activo(c, it) }?.let { j ->
             val app = c.applicationContext

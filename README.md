@@ -15,6 +15,12 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.2: el tiempo de juego exacto
+
+- **Ajustes → Juegos → Tiempo de juego**: con el permiso «acceso al uso» de Android (se da desde ahí), al volver a Hiedra se cuenta solo lo
+  que el emulador o el juego **estuvo delante**, y la sesión se reparte entre días según cuándo acabó de verdad. Sin el permiso, como siempre:
+  todo el rato hasta volver (tope de 12 horas). Los juegos web ya se contaban dentro de Hiedra. `UsoTest`.
+
 ## 0.3.1
 
 - El nodo ligero `tiempo` (lo que lee el Diario de Azabache) se sube **antes** del sello `stamps`: Azabache refresca al oír el sello y antes

@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.3.1"
+const val VERSION = "0.3.2"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -77,6 +77,18 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
                 Fila("Portadas automáticas", "Busca la caja de cada ROM en thumbnails.libretro.com (se envía el nombre del archivo). Si lo desactivas no sale nada a internet. Azabache enseña esa misma caja mientras no pongas otra portada.") {
                     Interruptor(Ajustes.portadasLibretro) { Ajustes.portadasLibretro = it; Ajustes.guardar(ctx) }
                 }
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Tiempo de juego", Modifier.padding(bottom = 4.dp))
+                var uso by remember { mutableStateOf(Uso.permitido(ctx)) }
+                val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+                DisposableEffect(owner) {
+                    val ob = androidx.lifecycle.LifecycleEventObserver { _, ev -> if (ev == androidx.lifecycle.Lifecycle.Event.ON_RESUME) uso = Uso.permitido(ctx) }
+                    owner.lifecycle.addObserver(ob); onDispose { owner.lifecycle.removeObserver(ob) }
+                }
+                MagLink(if (uso) "Tiempo exacto: activado" else "Tiempo exacto: dar permiso",
+                    if (uso) "Hiedra mira cuánto estuvo delante el emulador o el juego (permiso «acceso al uso» de Android). Lo demás no se mira." else "Sin él, se cuenta todo el rato desde que abres el juego hasta que vuelves a Hiedra (como mucho 12 horas). Con el permiso «acceso al uso» de Android se cuenta solo lo que el emulador o el juego estuvo delante.") { Uso.pedir(ctx) }
                 Spacer(Modifier.height(14.dp))
                 Filete(2.dp)
                 Spacer(Modifier.height(12.dp))

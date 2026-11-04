@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Actualizarse sola desde tu kDrive (Actualizador.kt): instalar la versión nueva de sí misma, y reabrirse después -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Opcional: el tiempo de juego exacto (Ajustes → Juegos). Se pide a mano en los ajustes de Android. -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <!-- Para que Android deje a Hiedra ver qué emuladores hay instalados (los de ES-DE) y qué apps se pueden abrir -->
     <queries>
         <intent>
