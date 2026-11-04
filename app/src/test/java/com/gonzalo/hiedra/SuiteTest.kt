@@ -84,6 +84,9 @@ class SuiteTest {
         assertEquals(5L, NotaAzabache.de(notas, pc)?.atrioId)
         assertEquals("Brutal", NotaAzabache.de(notas, Juego("b", "Hades", lanzadores = listOf(Lanzador.rom("gba", "Hades"))))?.resena)
         assertNull(NotaAzabache.de(notas, Juego("c", "Celeste")))
+        // Una ficha que Azabache refleja de Hiedra y aún no ha valorado (todo a 0) no cuenta como nota
+        val sin = JSONObject().put("games", JSONArray().put(JSONObject().put("id", 6L).put("name", "Celeste").put("general", 0).put("gfx", 0).put("story", 0).put("music", 0).put("gameplay", 0).put("review", "").put("updated", 1L)))
+        assertNull(NotaAzabache.de(NotaAzabache.deBlobs(listOf(sin)), Juego("c", "Celeste")))
     }
 
     @Test fun elRecorteDelEncuadreSigueElHueco() {

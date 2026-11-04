@@ -11,6 +11,9 @@ object NotaAzabache {
     /** [general]: de 0 a 100. [atrioId]: para abrir esa ficha en Azabache. */
     class Nota(val atrioId: Long, val general: Int, val resena: String)
 
+    /** Una ficha reflejada por Azabache a la que aún no has puesto nota (todas a 0 y sin reseña). */
+    fun sinValorar(o: JSONObject) = o.optInt("general", 0) == 0 && o.optInt("gfx", 0) == 0 && o.optInt("story", 0) == 0 && o.optInt("music", 0) == 0 && o.optInt("gameplay", 0) == 0 && o.optString("review").isBlank()
+
     private fun cambio(o: JSONObject) = maxOf(o.optLong("updated", 0L), o.optLong("sv", 0L))
 
     /** Las valoraciones de los juegos valorados, por clave «juego:<título>», a partir de lo que subieron los dispositivos de Atrio. Sin red: se puede probar. */
@@ -30,6 +33,8 @@ object NotaAzabache {
         val out = HashMap<String, Nota>()
         for ((id, o) in porId) {
             val nombre = o.optString("name").trim(); if (nombre.isBlank()) continue
+            // Una ficha que Azabache refleja de Hiedra sin nota aún (todo a 0) no es una valoración
+            if (sinValorar(o)) continue
             out["juego:" + Catalogo.norm(nombre)] = Nota(id, o.optInt("general", 0).coerceIn(0, 100), o.optString("review").trim())
         }
         return out

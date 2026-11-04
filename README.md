@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.2.1
+
+- **Azabache**: una ficha que Azabache refleja de Hiedra y que aún no has valorado (todas las notas a 0, sin reseña) ya no sale en «En
+  Azabache» como un 0: sigue «sin valorar».
+
 ## 0.2.0: la ficha cuenta más, y las claves se ven
 
 - **Datos** en cada ficha, como en Marfil: cuándo salió, el estudio, el editor, los géneros, la nota de Metacritic y un resumen, más lo de aquí
