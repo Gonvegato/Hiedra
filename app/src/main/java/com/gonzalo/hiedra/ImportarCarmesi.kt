@@ -32,7 +32,9 @@ import java.security.MessageDigest
  *    y del PC no están en lo que Carmesí sube: Hiedra las vuelve a leer de Steam y del PC;
  *  - lo que borraste en Carmesí no entra; la nota, los apuntes y la maqueta no vuelven (docs/MODELO.md);
  *  - las sagas y la portada de inicio (estantes, Mis elegidos, destacado) se traducen a los juegos de aquí; la apariencia, si es más nueva;
- *  - tus portadas (las de tu kDrive, en nube/portadas de Carmesí) se bajan para los juegos que aquí no tengan ninguna.
+ *  - tus portadas (las de tu kDrive, en nube/portadas de Carmesí) se bajan para los juegos que aquí no tengan ninguna;
+ *  - los guardados y las ROMs que Carmesí subió a tu kDrive pasan a ser los de Hiedra (se copia su índice de la cuenta, por el id del juego;
+ *    los archivos de kDrive son los mismos), así no hay que volver a subir nada.
  * Lo que ya tienes en Hiedra con alguna de esas claves (o el mismo título) no se duplica: se completa. Se puede repetir.
  */
 object ImportarCarmesi {
@@ -162,20 +164,41 @@ object ImportarCarmesi {
         return n
     }
 
-    class Resultado(val nuevos: Int, val yaEstaban: Int, val portadas: Int, val sagas: Int = 0, val inicio: Boolean = false, val ajustes: Boolean = false)
+    class Resultado(val nuevos: Int, val yaEstaban: Int, val portadas: Int, val sagas: Int = 0, val inicio: Boolean = false, val ajustes: Boolean = false, val nube: Int = 0)
+
+    /**
+     * Los guardados y las ROMs de Carmesí en tu kDrive: su índice (`nube/saves/<kid>` y `nube/roms/<kid>` de Carmesí) se copia al de Hiedra
+     * (`nube/saves/<id>`, `nube/roms/<id>`) para los juegos que aquí aún no tengan nada. Devuelve cuántos juegos han ganado algo. Bloqueante (red).
+     */
+    fun traerNube(idDeKid: Map<String, String>): Int {
+        var n = 0
+        for (tipo in listOf("saves", "roms")) {
+            val de = runCatching { Cuenta.db("GET", "/users/${Cuenta.uid}/$RAIZ_CARMESI/nube/$tipo", null)?.let { JSONObject(it) } }.getOrNull() ?: continue
+            val aqui = runCatching { Cuenta.db("GET", "${Cuenta.raiz}/nube/$tipo", null)?.let { JSONObject(it) } }.getOrNull()
+            val cambios = JSONObject()
+            for ((kid, id) in idDeKid) {
+                val nodo = de.optJSONObject(kid) ?: continue
+                if (aqui?.optJSONObject(id)?.optJSONObject("f")?.length() ?: 0 > 0) continue
+                cambios.put(id, nodo)
+            }
+            if (cambios.length() > 0) { Cuenta.db("PATCH", "${Cuenta.raiz}/nube/$tipo", cambios.toString(), "print=silent"); n += cambios.length() }
+        }
+        return n
+    }
 
     /** Pone lo hallado en Hiedra. Bloqueante (red: las portadas). Se puede repetir sin duplicar. */
     fun importar(ctx: Context, h: Hallazgo, avance: (Int, Int) -> Unit = { _, _ -> }): Resultado {
         var nuevos = 0; var ya = 0; var portadas = 0
         val cands = h.candidatos
-        // La clave de Carmesí → el id del juego que se queda (el nuevo o el que ya tenías)
+        // La clave de Carmesí → el id del juego que se queda (el nuevo o el que ya tenías); y el kid de Carmesí → ese id (para la nube)
         val idDe = HashMap<String, String>()
+        val idDeKid = HashMap<String, String>()
         val indice = runCatching { Cuenta.db("GET", "/users/${Cuenta.uid}/$RAIZ_CARMESI/nube/portadas", null)?.let { JSONObject(it) } }.getOrNull()
         cands.forEachIndexed { i, c ->
             avance(i, cands.size)
             val previo = existente(c)
             val juego = if (previo == null) { nuevos++; c.juego.also { Biblioteca.poner(it) } } else { ya++; completar(previo, c).also { if (it != previo) Biblioteca.poner(it) } }
-            c.claves.forEach { idDe[it] = juego.id }
+            c.claves.forEach { idDe[it] = juego.id }; idDeKid[c.kid] = juego.id
             if (juego.portada.isBlank() || !File(juego.portada).exists()) {
                 val f = indice?.optJSONObject(c.kid)?.optJSONObject("f")?.optJSONObject("img")
                 val id = f?.optLong("id") ?: 0L
@@ -207,8 +230,9 @@ object ImportarCarmesi {
             }
         }
         val ajustes = h.ajustes?.let { runCatching { Skin.aplicarAjustes(ctx, it) }.getOrDefault(false) } ?: false
+        val nube = runCatching { traerNube(idDeKid) }.getOrDefault(0)
         avance(cands.size, cands.size)
-        return Resultado(nuevos, ya, portadas, nSagas, inicio, ajustes)
+        return Resultado(nuevos, ya, portadas, nSagas, inicio, ajustes, nube)
     }
 
     /** Baja una portada tuya de tu kDrive (la que Carmesí subió) a la carpeta de portadas. null si no se pudo. */
@@ -253,7 +277,7 @@ fun SeccionImportarCarmesi() {
                         (if (h.sagas.isNotEmpty()) " y ${h.sagas.size} ${if (h.sagas.size == 1) "saga" else "sagas"}" else "") + ". " +
                         (if (yaEstan > 0) "$yaEstan ya los tienes aquí: se completan sin duplicarse. " else "") +
                         (if (conRom > 0) "Las ROMs ($conRom) quedan «en otro dispositivo» hasta que escanees su carpeta aquí. " else "") +
-                        "Las horas de Carmesí se guardan aparte (como «Carmesí» en la ficha); las de Steam y del PC se vuelven a leer.",
+                        "Las horas de Carmesí se guardan aparte (como «Carmesí» en la ficha); las de Steam y del PC se vuelven a leer. Los guardados y las ROMs que Carmesí subió a tu kDrive pasan a ser los de aquí.",
                     color = Charcoal, fontFamily = Body, fontSize = 14.sp, lineHeight = 20.sp
                 )
             },
@@ -263,7 +287,7 @@ fun SeccionImportarCarmesi() {
                     ambito.launch {
                         val r = withContext(Dispatchers.IO) { runCatching { ImportarCarmesi.importar(ctx, hallazgo) { i, t -> estado = "Importando $i de $t…" } } }
                         ocupado = false
-                        estado = r.fold({ "Hecho: ${it.nuevos} juegos nuevos, ${it.yaEstaban} que ya tenías, ${it.portadas} portadas" + (if (it.sagas > 0) ", ${it.sagas} sagas" else "") + (if (it.inicio) ", la portada de inicio" else "") + (if (it.ajustes) " y la apariencia." else ".") }, { e -> e.message ?: "No he podido importar." })
+                        estado = r.fold({ "Hecho: ${it.nuevos} juegos nuevos, ${it.yaEstaban} que ya tenías, ${it.portadas} portadas" + (if (it.sagas > 0) ", ${it.sagas} sagas" else "") + (if (it.nube > 0) ", guardados o ROMs de kDrive para ${it.nube}" else "") + (if (it.inicio) ", la portada de inicio" else "") + (if (it.ajustes) " y la apariencia." else ".") }, { e -> e.message ?: "No he podido importar." })
                     }
                 }) { Text("Importar", color = Acento, fontWeight = FontWeight.Bold) }
             },

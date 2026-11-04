@@ -114,6 +114,35 @@ class SincroTest {
         assertFalse("A sigue teniendo su archivo", za.enOtroDispositivo)
         assertFalse("sin novedades: no baja nada", SincroP.bajar(ctx))
 
+        // --- Carmesí dejó su biblioteca en la cuenta (otro hueco: /portico): Hiedra A la trae, de punta a punta
+        val carm = JSONObject().put("v", 1).put("dev", "movil-viejo").put("borrados", JSONObject())
+            .put("juegos", org.json.JSONArray()
+                .put(JSONObject().put("k", "rom:gba:metroid").put("t", "Metroid Fusion").put("tp", "ROM").put("s", "gba").put("a", "Metroid").put("es", "PASADO").put("te", true).put("fi", 777L).put("an", 5L).put("mod", 100L).put("msp", 9_000L).put("vp", 3).put("dd", JSONObject().put("2026-02-02", 9_000L)).put("al", org.json.JSONArray().put("juego:metroidfusion")))
+                .put(JSONObject().put("k", "rom:gba:zelda").put("t", "Zelda").put("tp", "ROM").put("s", "gba").put("a", "Zelda").put("es", "JUGANDO").put("an", 5L).put("mod", 100L).put("msp", 2_000L).put("vp", 1)))
+            .put("sg", org.json.JSONArray().put(JSONObject().put("id", "sg1").put("n", "Nintendo").put("mod", 5L).put("k", org.json.JSONArray().put("rom:gba:zelda").put("rom:gba:metroid"))))
+            .put("ini", JSONObject().put("mod", 3L).put("d", "rom:gba:metroid").put("f", org.json.JSONArray()).put("k", org.json.JSONArray().put("rom:gba:zelda")))
+            .put("aj", JSONObject().put("at", 50L).put("skin", JSONObject().put("fondoId", "granate")))
+        val tokA = tok
+        http("PUT", "/users/$uid/portico/dev/movil-viejo.json?auth=$tokA", JSONObject().put("name", "Viejo").put("updated", 1L).put("data", carm.toString()).toString())
+        http("PUT", "/users/$uid/portico/stamps/movil-viejo.json?auth=$tokA", "1")
+        val kidMetroid = java.security.MessageDigest.getInstance("SHA-1").digest("rom:gba:metroid".toByteArray()).joinToString("") { "%02x".format(it) }.take(16)
+        http("PUT", "/users/$uid/portico/nube/saves/$kidMetroid/f/abc.json?auth=$tokA", JSONObject().put("n", "Metroid.srm").put("id", 4242L).put("h", "h1").put("s", 10L).put("dev", "movil-viejo").put("t", 1L).toString())
+        Inicio.cargar(ctx); Inicio.poner(ConfigInicio(), 0); Skin.cargar(ctx); Skin.fondoId = ""
+        val h = ImportarCarmesi.leer()!!
+        assertEquals(2, h.candidatos.size); assertEquals(1, h.sagas.size)
+        val r = ImportarCarmesi.importar(ctx, h)
+        assertEquals("Metroid es nuevo; Zelda ya estaba (por su clave)", 1, r.nuevos); assertEquals(1, r.yaEstaban); assertEquals(1, r.sagas); assertTrue(r.inicio); assertTrue(r.ajustes); assertEquals(1, r.nube)
+        val m = Biblioteca.porClave("rom:gba:metroid")!!
+        assertEquals(Estado.PASADO, m.estado); assertEquals(777L, m.finalizado); assertEquals(9_000L, m.externa(Fuentes.carmesi("movil-viejo")).ms); assertTrue("juego:metroidfusion" in m.claves)
+        assertTrue("la ROM de Carmesí no está en este móvil", m.enOtroDispositivo)
+        val zz = Biblioteca.por("j1")!!
+        assertEquals("Zelda sigue siendo j1, con sus horas de A, de B y de Carmesí", 12_000L, zz.msJugados); assertEquals(2_000L, zz.externa(Fuentes.carmesi("movil-viejo")).ms)
+        assertEquals(listOf("j1", m.id), Sagas.por("sg1")!!.juegos)
+        assertEquals(m.id, Inicio.config.destacado); assertEquals(listOf("j1"), Inicio.config.fijados); assertEquals("granate", Skin.fondoId)
+        assertEquals("el guardado de kDrive pasa al índice de Hiedra, por el id del juego", 4242L, NubeP.indice("saves", m.id)["abc"]!!.id)
+        assertEquals("repetir no duplica nada", 0, ImportarCarmesi.importar(ctx, ImportarCarmesi.leer()!!).nuevos); assertEquals(3, Biblioteca.juegos.size)
+        Skin.fondoId = ""; Inicio.poner(ConfigInicio(), 0)
+
         // La contraseña no se guarda
         val guardado = ctx.getSharedPreferences("hiedra_cuenta", 0).all.values.joinToString("|")
         assertFalse(guardado.contains("secreto1"))

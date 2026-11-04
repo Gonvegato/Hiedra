@@ -15,6 +15,14 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.1.1
+
+- **Icono nuevo**: una hoja de hiedra rellena (sus cinco lóbulos, el tallo y los nervios vaciados) en verde claro sobre verde muy oscuro, dibujada
+  por `herramientas/icono-hiedra.py`.
+- **La importación de Carmesí trae también la nube**: los guardados y las ROMs que Carmesí subió a tu kDrive pasan a ser los de Hiedra (se copia
+  su índice de la cuenta al de Hiedra, por el id de cada juego; los archivos de kDrive son los mismos), sin volver a subir nada. Probado de punta a
+  punta contra el Firebase de mentira (`SincroTest`).
+
 ## 0.1.0: la primera
 
 - **Lo de Carmesí, entero, sobre el modelo nuevo**: portada de revista con el destacado, los estantes (orden, tamaño, a la vista, «Mis elegidos»)
@@ -32,8 +40,7 @@ Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está c
   estuviera en Carmesí.
 - **Para Azabache** (`docs/CONTRATO-DATOS.md`): el nodo ligero `tiempo/<id>/<fuente>` con las claves del juego (para enlazar lo valorado por la
   clave antigua), un solo nodo por fuente.
-- **Icono**: una hoja de hiedra sobre verde muy oscuro, adaptable (`herramientas/icono-hiedra.py`; si hay `docs/iconos/hiedra-original.jpg`
-  lo saca de ahí, y si no la dibuja).
+- **Icono**: una hoja de hiedra sobre verde muy oscuro, adaptable (`herramientas/icono-hiedra.py`).
 - **Se actualiza sola** desde la carpeta «versiones» de tu kDrive (`Hiedra-<versión>.apk`).
 
 ## Capturas

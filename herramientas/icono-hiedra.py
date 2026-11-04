@@ -7,7 +7,7 @@ claras) se saca de la imagen, como en Marfil, Carmesí y Cobalto:
   - el fondo es el degradado de la tarjeta (el interior muy desenfocado, sin líneas);
   - el primer plano son solo las líneas claras de la hoja, en blanco, dentro de la zona segura (66 % central);
   - el monocromo es la misma hoja en negro (para los iconos con tema).
-Sin la imagen, se dibuja a mano una hoja de hiedra (cinco lóbulos, su tallo y sus nervios) sobre verde hiedra.
+Sin la imagen, se dibuja a mano una hoja de hiedra (rellena, con sus lóbulos, su tallo y los nervios vaciados) sobre verde hiedra.
 Uso: python3 herramientas/icono-hiedra.py     (necesita Pillow y numpy)
 """
 import math, os
@@ -45,44 +45,64 @@ def de_la_imagen():
     return bg, alfa
 
 
+def spline(ctrl, n=24):
+    """Una curva suave (Catmull-Rom) por los puntos de control, cerrada."""
+    out = []
+    m = len(ctrl)
+    for i in range(m):
+        p0, p1, p2, p3 = ctrl[(i - 1) % m], ctrl[i], ctrl[(i + 1) % m], ctrl[(i + 2) % m]
+        for k in range(n):
+            t = k / n; t2 = t * t; t3 = t2 * t
+            x = 0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3)
+            y = 0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)
+            out.append((x, y))
+    return out
+
+
+# La mitad derecha de una hoja de hiedra (Hedera helix): la escotadura de arriba (donde va el tallo), el lóbulo de arriba, el lateral y la punta.
+# En unidades de media hoja, x hacia la derecha, y hacia abajo.
+MEDIA = [(0.00, -0.48), (0.12, -0.64), (0.30, -0.82), (0.47, -0.86), (0.55, -0.74), (0.51, -0.58), (0.45, -0.46),
+         (0.64, -0.42), (0.86, -0.32), (0.99, -0.18), (0.93, -0.02), (0.74, 0.07), (0.56, 0.10),
+         (0.51, 0.30), (0.39, 0.60), (0.21, 0.84), (0.00, 1.00)]
+
+
 def hoja(S):
-    """El contorno de una hoja de hiedra (cinco lóbulos, la punta abajo), en píxeles, con el centro en (S/2, S/2)."""
-    pts = []
-    # Un radio que varía con el ángulo: cinco lóbulos (los dos de arriba pequeños, los dos laterales medianos, la punta grande abajo)
-    for k in range(720):
-        t = 2 * math.pi * k / 720            # 0 = abajo (la punta)
-        lob = 0.78 + 0.22 * math.cos(5 * t)   # cinco lóbulos
-        base = 1.0 - 0.28 * (1 - math.cos(t)) / 2   # más estrecha arriba (hacia el tallo)
-        r = (0.42 * S) * lob * base
-        if abs(t) < 0.25 or abs(t - 2 * math.pi) < 0.25: r *= 1.12   # la punta, más larga
-        x = S / 2 + r * math.sin(t)
-        y = S / 2 - 0.05 * S + r * math.cos(t)
-        pts.append((x, y))
-    return pts
+    """El contorno de una hoja de hiedra, en píxeles, con el centro en (S/2, S/2) y la punta abajo."""
+    der = MEDIA
+    izq = [(-x, y) for (x, y) in reversed(MEDIA[1:-1])]
+    ctrl = der + izq
+    esc = 0.46 * S
+    cx, cy = S / 2, S / 2 - 0.04 * S
+    return [(cx + x * esc, cy + y * esc) for (x, y) in spline(ctrl)]
 
 
 def a_mano():
-    S = 1200
+    S = 1200; K = 4   # se dibuja a 4x y se reduce (bordes suaves)
     y, x = np.mgrid[0:S, 0:S].astype(float) / S
     t = np.clip((x + y) / 2, 0, 1)
-    arriba = np.array([26., 72., 44.]); abajo = np.array([8., 34., 22.])
+    arriba = np.array([28., 78., 48.]); abajo = np.array([7., 32., 20.])
     rgb = arriba[None, None, :] * (1 - t[..., None]) + abajo[None, None, :] * t[..., None]
     bg = Image.fromarray(rgb.astype(np.uint8), 'RGB')
-    lin = Image.new('L', (S, S), 0)
+    G = S * K
+    lin = Image.new('L', (G, G), 0)
     d = ImageDraw.Draw(lin)
-    grosor = int(S * 0.016)
-    p = hoja(S)
-    d.line(p + [p[0]], fill=255, width=grosor, joint='curve')
-    cx, cy = S / 2, S / 2 - 0.05 * S
-    # El tallo, desde la escotadura de arriba
-    d.line([(cx, cy - 0.30 * S), (cx + 0.02 * S, cy - 0.47 * S)], fill=255, width=grosor)
-    # Los nervios: el central hasta la punta y uno hacia cada lóbulo
-    d.line([(cx, cy - 0.28 * S), (cx, cy + 0.44 * S)], fill=255, width=int(grosor * 0.8))
-    for ang, largo in ((72, 0.40), (-72, 0.40), (144, 0.30), (-144, 0.30)):
-        a = math.radians(ang)
-        d.line([(cx, cy - 0.05 * S), (cx + largo * S * math.sin(a), cy - 0.05 * S + largo * S * math.cos(a))], fill=255, width=int(grosor * 0.7))
-    halo = lin.filter(ImageFilter.GaussianBlur(S * 0.02))
-    alfa = np.clip(np.asarray(lin).astype(float) / 255 + np.asarray(halo).astype(float) / 255 * 0.3, 0, 1)
+    p = hoja(G)
+    d.polygon(p, fill=255)
+    cx, cy = G / 2, G / 2 - 0.04 * G
+    esc = 0.46 * G
+    grosor = int(G * 0.022)
+    # El tallo (peciolo), desde la escotadura hacia arriba, un poco curvado
+    tallo = [(cx + 0.00 * esc, cy - 0.46 * esc), (cx + 0.02 * esc, cy - 0.62 * esc), (cx + 0.07 * esc, cy - 0.80 * esc), (cx + 0.15 * esc, cy - 0.96 * esc)]
+    d.line(tallo, fill=255, width=grosor, joint='curve')
+    d.ellipse([tallo[-1][0] - grosor / 2, tallo[-1][1] - grosor / 2, tallo[-1][0] + grosor / 2, tallo[-1][1] + grosor / 2], fill=255)
+    # Los nervios, vaciados de la hoja (se ve el fondo): el central y uno hacia cada lóbulo
+    fino = int(G * 0.009)
+    nac = (cx, cy - 0.30 * esc)
+    d.line([(cx, cy - 0.44 * esc), (cx, cy + 0.92 * esc)], fill=0, width=fino)
+    for (tx, ty) in ((0.86, -0.17), (-0.86, -0.17), (0.40, -0.76), (-0.40, -0.76)):
+        d.line([nac, (cx + tx * esc, cy + ty * esc)], fill=0, width=fino)
+    lin = lin.resize((S, S), Image.LANCZOS)
+    alfa = np.asarray(lin).astype(float) / 255
     return bg, alfa
 
 
@@ -92,6 +112,6 @@ if r is None:
     r = a_mano(); origen = 'dibujado a mano'
 bg, alfa = r
 bg.resize((C, C), Image.BICUBIC).save(RES + 'ic_launcher_hiedra_bg.png')
-capa(alfa, (255, 255, 255)).save(RES + 'ic_launcher_hiedra_fg.png')
+capa(alfa, (214, 228, 196)).save(RES + 'ic_launcher_hiedra_fg.png')
 capa(alfa, (0, 0, 0)).save(RES + 'ic_launcher_hiedra_mono.png')
 print('Hecho (' + origen + '): fondo, primer plano y monocromo en', RES)

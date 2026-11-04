@@ -94,7 +94,8 @@ para una ficha de juego.
   con la cuenta y se mezcla por máximo: así ningún Hiedra las pierde aunque Carmesí ya no suba nada). Las de Steam y del PC no están en lo que
   Carmesí sube (eran locales de cada dispositivo): Hiedra las vuelve a leer de Steam y del PC. Las sagas (`sg`), la portada (`ini`) y la
   apariencia (`aj`) se traducen a ids / se aplican. Las
-  portadas tuyas se bajan de kDrive (`nube/portadas/<kid>`). Dos juegos de Carmesí con la misma clave entre dispositivos son uno. Carmesí no se
+  portadas tuyas se bajan de kDrive (`nube/portadas/<kid>`); el índice de guardados y ROMs de kDrive (`nube/saves/<kid>`, `nube/roms/<kid>`) se
+  copia al de Hiedra por el id del juego, así los archivos ya subidos siguen valiendo. Dos juegos de Carmesí con la misma clave entre dispositivos son uno. Carmesí no se
   toca.
 - **De Atrio** (lo que no esté en Carmesí): como hace Carmesí hoy (fichas con `juego:<título>` como clave, estado, horas, duraciones, sagas).
 - **De tu PC**: los juegos del PC entran solos si los has jugado o ya estaban; los demás, desde «Tu PC → Biblioteca → Añadir», como ahora.
