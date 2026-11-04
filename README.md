@@ -15,6 +15,13 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.0: Ajustes en pestañas y la caja automática para Azabache
+
+- **Ajustes** en pestañas, como Atrio: Apariencia · Juegos (sistemas y emuladores, portadas automáticas, pantalla de inicio, capturas del PC) ·
+  Servicios (la cuenta de Atrio, traer de Carmesí y de Atrio, las claves) · Avanzado (kDrive y actualizaciones, copias). Lo mismo, sin tenerlo todo a la vista.
+- **Portadas para Azabache**: si un juego no tiene portada tuya y «Portadas automáticas» está encendido, la dirección de su caja de libretro viaja
+  en la biblioteca (`pa`), así Azabache enseña la misma caja que ves aquí. Las tuyas siguen viajando por `pu` (internet) o kDrive (galería).
+
 ## 0.2.1
 
 - **Azabache**: una ficha que Azabache refleja de Hiedra y que aún no has valorado (todas las notas a 0, sin reseña) ya no sale en «En
@@ -71,7 +78,7 @@ Generadas en el ordenador con juegos de ejemplo (`CapturasTest`, `-Proborazzi.te
 [ficha](docs/capturas/6_ficha.png) · [ficha con dos lanzadores](docs/capturas/6c_ficha_dos_lanzadores.png) · [ficha sin lanzador](docs/capturas/6b_ficha_sin_lanzador.png) ·
 [ficha, casillas](docs/capturas/12_ficha_casillas.png) · [ficha, datos (RAWG)](docs/capturas/12b_ficha_datos.png) · [ficha, datos (Steam)](docs/capturas/12c_ficha_datos_steam.png) · [servicios](docs/capturas/31_ajustes_servicios.png) · [añadir](docs/capturas/9_anadir.png) · [sistemas](docs/capturas/4_sistemas.png) ·
 [Tu PC](docs/capturas/23_tu_pc.png) · [biblioteca del PC](docs/capturas/24_tu_pc_biblioteca.png) · [ficha de un juego del PC](docs/capturas/26_ficha_pc.png) ·
-[ajustes](docs/capturas/5_ajustes.png) · [ajustes con fondo](docs/capturas/30_ajustes_fondo_oscuro.png) · [vacía](docs/capturas/1_portada_vacia.png).
+[ajustes](docs/capturas/5_ajustes.png) · [ajustes: juegos](docs/capturas/5b_ajustes_juegos.png) · [ajustes: servicios](docs/capturas/5c_ajustes_servicios.png) · [ajustes: avanzado](docs/capturas/5d_ajustes_avanzado.png) · [ajustes con fondo](docs/capturas/30_ajustes_fondo_oscuro.png) · [vacía](docs/capturas/1_portada_vacia.png).
 Los widgets, en `docs/widgets/`.
 
 ## Cómo se trabaja

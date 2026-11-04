@@ -114,6 +114,10 @@ class CapturasTest {
         rule.onNodeWithText("VER LA SAGA →", useUnmergedTree = true).performClick(); foto("3g_pagina_saga")
         pulsar("← VOLVER")
         pulsar("← HIEDRA"); rule.onNodeWithContentDescription("Ajustes").performClick(); foto("5_ajustes")
+        rule.onNodeWithText("JUEGOS").performClick(); rule.waitForIdle(); foto("5b_ajustes_juegos")
+        rule.onNodeWithText("SERVICIOS").performClick(); rule.waitForIdle(); foto("5c_ajustes_servicios")
+        rule.onNodeWithText("AVANZADO").performClick(); rule.waitForIdle(); foto("5d_ajustes_avanzado")
+        rule.onNodeWithText("JUEGOS").performClick(); rule.waitForIdle()
         rule.onNodeWithText("Sistemas y emuladores", substring = true).performScrollTo().performClick(); foto("4_sistemas")
         pulsar("← HIEDRA"); pulsar("← HIEDRA"); ir("PASADO")
         rule.onAllNodesWithText("Pokémon Esmeralda", substring = true, useUnmergedTree = true)[0].performClick(); foto("6_ficha")
@@ -207,6 +211,7 @@ class CapturasTest {
         siembra()
         montar(oscuro = false)
         rule.onNodeWithContentDescription("Ajustes").performClick()
+        rule.onNodeWithText("SERVICIOS").performClick(); rule.waitForIdle()
         rule.onNodeWithText("Traer las horas de Steam", substring = true).performScrollTo(); foto("31_ajustes_servicios")
     }
 

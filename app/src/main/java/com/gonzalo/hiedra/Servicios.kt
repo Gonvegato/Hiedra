@@ -247,7 +247,7 @@ fun SeccionServicios() {
     /** Qué hay de cada clave: la tuya, la de Atrio o ninguna. */
     fun estado(mia: String, deAtrio: String) = when { mia.isNotBlank() -> "la tuya"; deAtrio.isNotBlank() -> "la de Atrio"; else -> "ninguna" }
     val resumen = listOf("SteamGridDB" to estado(p.sgdb, atrio.sgdb), "Steam" to estado(p.steamKey, atrio.steamKey) + (if (p.steamUser.isBlank() && atrio.steamUser.isBlank()) ", sin perfil" else ""),
-        "RAWG" to estado(p.rawg, atrio.rawg), "IGDB" to estado(p.igdbId, atrio.igdbId), "kDrive" to (if (KDrive.on(ctx)) "conectado" else "sin conectar (abajo, en Actualizaciones)"))
+        "RAWG" to estado(p.rawg, atrio.rawg), "IGDB" to estado(p.igdbId, atrio.igdbId), "kDrive" to (if (KDrive.on(ctx)) "conectado" else "sin conectar (en «Avanzado»)"))
     Cuerpo("SteamGridDB da las portadas; Steam, tus horas; RAWG e IGDB, los datos de cada juego (fecha, estudio, géneros, lo que suele durar). Lo que pongas aquí manda; si lo dejas vacío, se usa lo que tengas en Atrio (viene con tu cuenta).", tam = 12)
     Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 6.dp)) { resumen.forEach { (n, v) -> MagFact(n, v) } }
     if (mirando) Text("Mirando las de Atrio…", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp)

@@ -180,7 +180,7 @@ object NubeP {
         } finally { tmp.delete() }
     }
 
-    /** ¿Subir las ROMs solas? (con wifi; el interruptor está en Ajustes → Actualizaciones y nube) */
+    /** ¿Subir las ROMs solas? (con wifi; el interruptor está en Ajustes → Avanzado) */
     fun romsSolas(c: Context) = prefs(c).getBoolean("roms_solas", true)
     fun ponRomsSolas(c: Context, v: Boolean) { prefs(c).edit().putBoolean("roms_solas", v).apply() }
 

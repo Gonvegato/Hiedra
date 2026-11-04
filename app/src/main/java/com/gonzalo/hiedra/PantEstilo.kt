@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.2.1"
+const val VERSION = "0.3.0"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -55,76 +56,73 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
     val importar = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { u ->
         if (u != null) mensaje = runCatching { Biblioteca.leer(ctx.contentResolver.openInputStream(u)!!.use { it.readBytes().decodeToString() }, reemplazar = false); Biblioteca.guardar(); "Copia importada" }.getOrElse { "Ese archivo no es una copia de Hiedra" }
     }
+    var pestana by rememberSaveable { mutableIntStateOf(0) }
     Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).statusBarsPadding().navigationBarsPadding().padding(horizontal = 20.dp)) {
         RevistaTopBar(alVolver, "Hiedra")
         Antetitulo("Sección", Modifier.padding(top = 10.dp), color = Acento, conCuadro = false)
         FitTitle("Ajustes", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
         Filete(3.dp)
+        PestanasRevista(listOf("Apariencia", "Juegos", "Servicios", "Avanzado"), pestana) { pestana = it }
         Spacer(Modifier.height(14.dp))
 
-        SeccionApariencia()
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Sistemas", Modifier.padding(bottom = 4.dp))
-        MagLink("Sistemas y emuladores", "Cada consola, con el emulador que elijas, y las carpetas de ROMs", onClick = alSistemas)
-
-        Spacer(Modifier.height(26.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Portadas", Modifier.padding(bottom = 4.dp))
-        Fila("Portadas automáticas", "Busca la caja de cada ROM en thumbnails.libretro.com (se envía el nombre del archivo). Si lo desactivas no sale nada a internet.") {
-            Interruptor(Ajustes.portadasLibretro) { Ajustes.portadasLibretro = it; Ajustes.guardar(ctx) }
-        }
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Pantalla de inicio", Modifier.padding(bottom = 4.dp))
-        Fila("Usar Hiedra como launcher", if (inicio) "Hiedra ya puede elegirse como pantalla de inicio del móvil." else "Permite elegir Hiedra como pantalla de inicio (Android te lo pregunta).") {
-            Interruptor(inicio) { on ->
-                ctx.packageManager.setComponentEnabledSetting(aliasInicio(ctx), if (on) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
-                inicio = on
-                if (on) runCatching { ctx.startActivity(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        when (pestana) {
+            0 -> SeccionApariencia()
+            1 -> {
+                Antetitulo("Sistemas", Modifier.padding(bottom = 4.dp))
+                MagLink("Sistemas y emuladores", "Cada consola, con el emulador que elijas, y las carpetas de ROMs", onClick = alSistemas)
+                Spacer(Modifier.height(26.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Portadas", Modifier.padding(bottom = 4.dp))
+                Fila("Portadas automáticas", "Busca la caja de cada ROM en thumbnails.libretro.com (se envía el nombre del archivo). Si lo desactivas no sale nada a internet. Azabache enseña esa misma caja mientras no pongas otra portada.") {
+                    Interruptor(Ajustes.portadasLibretro) { Ajustes.portadasLibretro = it; Ajustes.guardar(ctx) }
+                }
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Pantalla de inicio", Modifier.padding(bottom = 4.dp))
+                Fila("Usar Hiedra como launcher", if (inicio) "Hiedra ya puede elegirse como pantalla de inicio del móvil." else "Permite elegir Hiedra como pantalla de inicio (Android te lo pregunta).") {
+                    Interruptor(inicio) { on ->
+                        ctx.packageManager.setComponentEnabledSetting(aliasInicio(ctx), if (on) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+                        inicio = on
+                        if (on) runCatching { ctx.startActivity(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                    }
+                }
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Tu PC", Modifier.padding(bottom = 4.dp))
+                var galeria by remember { mutableStateOf(Suite.aGaleria()) }
+                Fila("Capturas del PC en la galería", "Las capturas que pides al PC se guardan también en Imágenes/Hiedra (si no, solo dentro de la app).") {
+                    Interruptor(galeria) { galeria = it; Suite.ponAGaleria(it) }
+                }
+            }
+            2 -> {
+                Antetitulo("Cuenta de Atrio", Modifier.padding(bottom = 4.dp))
+                SeccionCuenta()
+                Filete(1.dp, Line)
+                SeccionImportarCarmesi()
+                Filete(1.dp, Line)
+                SeccionImportarAtrio()
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Servicios", Modifier.padding(bottom = 4.dp))
+                SeccionServicios()
+            }
+            else -> {
+                Antetitulo("kDrive y actualizaciones", Modifier.padding(bottom = 4.dp))
+                SeccionActualizaciones()
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Copias", Modifier.padding(bottom = 4.dp))
+                MagLink("Guardar copia de la biblioteca", "Un archivo con tus juegos y carpetas (no incluye las ROMs)") { exportar.launch("hiedra-biblioteca.json") }
+                Filete(1.dp, Line)
+                MagLink("Importar copia", "Suma los juegos de una copia a los que ya tienes") { importar.launch(arrayOf("application/json", "*/*")) }
+                mensaje?.let { Text(it, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp)) }
             }
         }
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Cuenta de Atrio", Modifier.padding(bottom = 4.dp))
-        SeccionCuenta()
-        Filete(1.dp, Line)
-        SeccionImportarCarmesi()
-        Filete(1.dp, Line)
-        SeccionImportarAtrio()
-        Filete(1.dp, Line)
-        var galeria by remember { mutableStateOf(Suite.aGaleria()) }
-        Fila("Capturas del PC en la galería", "Las capturas que pides al PC se guardan también en Imágenes/Hiedra (si no, solo dentro de la app).") {
-            Interruptor(galeria) { galeria = it; Suite.ponAGaleria(it) }
-        }
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Servicios", Modifier.padding(bottom = 4.dp))
-        SeccionServicios()
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Actualizaciones", Modifier.padding(bottom = 4.dp))
-        SeccionActualizaciones()
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Copias", Modifier.padding(bottom = 4.dp))
-        MagLink("Guardar copia de la biblioteca", "Un archivo con tus juegos y carpetas (no incluye las ROMs)") { exportar.launch("hiedra-biblioteca.json") }
-        Filete(1.dp, Line)
-        MagLink("Importar copia", "Suma los juegos de una copia a los que ya tienes") { importar.launch(arrayOf("application/json", "*/*")) }
-        mensaje?.let { Text(it, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp)) }
 
         Spacer(Modifier.height(26.dp))
         Filete(3.dp)
@@ -163,7 +161,7 @@ private fun SeccionCuenta() {
     var ocupado by remember { mutableStateOf(false) }
     var aviso by remember { mutableStateOf<String?>(null) }
     if (!Cuenta.vinculada) {
-        Text("Entra con la misma cuenta que usas en Atrio y tus juegos, horas, notas y diseños de ficha se sincronizan entre tus Hiedras. Las ROMs, los guardados y las imágenes no se suben (todavía).",
+        Text("Entra con la misma cuenta que usas en Atrio y tus juegos, horas, notas y diseños de ficha se sincronizan entre tus Hiedras. Las ROMs, los guardados y las portadas van por tu kDrive (se conecta en «Avanzado»).",
             color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         CampoRevista("Usuario", usuario, "tu usuario de Atrio") { usuario = it }
         CampoRevista("Contraseña", clave, "••••••••", secreto = true) { clave = it }

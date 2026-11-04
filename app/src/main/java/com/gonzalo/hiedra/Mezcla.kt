@@ -37,6 +37,8 @@ object Mezcla {
         .put("ez", j.zoom.toDouble()).put("eox", j.ox.toDouble()).put("eoy", j.oy.toDouble()).put("dh", j.durHistoria).put("de", j.durExtras).put("dc", j.durCompleto)
         .put("k", JSONArray().also { a -> j.otrasClaves.forEach { a.put(it) } })
         .put("ln", JSONArray().also { a -> j.lanzadores.forEach { a.put(it.aJson()) } })
+        // La portada automática (la caja de libretro de una ROM), para que Azabache enseñe la misma que aquí cuando no hay otra
+        .put("pa", if (j.portadaUrl.isBlank() && Ajustes.portadasLibretro) urlsLibretro(j).firstOrNull().orEmpty() else "")
         .put("msp", j.propias.ms).put("vp", j.propias.veces).put("dd", JSONObject().also { d -> j.propias.dias.forEach { (k, v) -> d.put(k, v) } })
         .put("ex", JSONObject().also { o -> j.externas.forEach { (k, v) -> o.put(k, v.aJson()) } })
 
