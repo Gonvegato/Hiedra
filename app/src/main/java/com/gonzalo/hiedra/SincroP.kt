@@ -78,9 +78,10 @@ object SincroP {
             val nodo = JSONObject().put("name", Cuenta.nombreDispositivo).put("device", "hiedra").put("updated", JSONObject().put(".sv", "timestamp")).put("data", blob)
             Cuenta.db("PUT", "${Cuenta.raiz}/dev/${Cuenta.dispositivo}", nodo.toString(), "print=silent")
             val ts = Cuenta.db("GET", "${Cuenta.raiz}/dev/${Cuenta.dispositivo}/updated", null)?.toLongOrNull() ?: throw Cuenta.Fail("Firebase no ha guardado la copia.")
+            // El nodo ligero «tiempo» va ANTES del sello: Azabache lo lee en cuanto oye el sello (ver docs/CONTRATO-DATOS.md)
+            runCatching { subirTiempo(c) }
             Cuenta.db("PUT", "${Cuenta.raiz}/stamps/${Cuenta.dispositivo}", ts.toString(), "print=silent")
             p.edit().putString("hash", hash).apply()
-            runCatching { subirTiempo(c) }
             runCatching { portadas(c) }
             guardaVistos(c, vistos(c).put(Cuenta.dispositivo, ts))
             bien(c)

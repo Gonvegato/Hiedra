@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.1
+
+- El nodo ligero `tiempo` (lo que lee el Diario de Azabache) se sube **antes** del sello `stamps`: Azabache refresca al oír el sello y antes
+  podía leer las horas viejas.
+
 ## 0.3.0: Ajustes en pestañas y la caja automática para Azabache
 
 - **Ajustes** en pestañas, como Atrio: Apariencia · Juegos (sistemas y emuladores, portadas automáticas, pantalla de inicio, capturas del PC) ·
