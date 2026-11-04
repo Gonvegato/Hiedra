@@ -122,34 +122,49 @@ object Steam {
     }
 }
 
-/** Las claves de los servicios: las de Ajustes mandan; si faltan, las que Atrio subió a tu cuenta. */
+/**
+ * Las claves de los servicios: las de Ajustes mandan; si faltan, las que Atrio subió a tu cuenta («keys» en sus datos: SteamGridDB, Steam, RAWG
+ * e IGDB). Se traen al vincular la cuenta y en cada sincronización a mano. El token de kDrive NO viene por aquí: lo que hay en tu cuenta lo puede
+ * leer tu pareja (modo pareja), y el token da acceso a todos tus archivos; se pega en cada app, como en Atrio.
+ */
 object Servicios {
-    class Claves(val sgdb: String, val steamKey: String, val steamUser: String)
+    class Claves(val sgdb: String = "", val steamKey: String = "", val steamUser: String = "", val rawg: String = "", val igdbId: String = "", val igdbSecret: String = "")
+    private val NOMBRES = listOf("sgdb", "steamKey", "steamUser", "rawg", "igdbId", "igdbSecret")
     private fun prefs(c: Context) = c.getSharedPreferences("hiedra_servicios", Context.MODE_PRIVATE)
-
-    fun claves(c: Context): Claves {
+    private fun lee(c: Context, prefijo: String): Claves {
         val p = prefs(c)
-        return Claves(p.getString("sgdb", "").orEmpty().ifBlank { p.getString("a_sgdb", "").orEmpty() },
-            p.getString("steamKey", "").orEmpty().ifBlank { p.getString("a_steamKey", "").orEmpty() },
-            p.getString("steamUser", "").orEmpty().ifBlank { p.getString("a_steamUser", "").orEmpty() })
+        fun v(k: String) = p.getString(prefijo + k, "").orEmpty()
+        return Claves(v("sgdb"), v("steamKey"), v("steamUser"), v("rawg"), v("igdbId"), v("igdbSecret"))
     }
-    fun propias(c: Context): Claves { val p = prefs(c); return Claves(p.getString("sgdb", "").orEmpty(), p.getString("steamKey", "").orEmpty(), p.getString("steamUser", "").orEmpty()) }
-    fun deAtrio(c: Context): Claves { val p = prefs(c); return Claves(p.getString("a_sgdb", "").orEmpty(), p.getString("a_steamKey", "").orEmpty(), p.getString("a_steamUser", "").orEmpty()) }
-    fun poner(c: Context, k: Claves) { prefs(c).edit().putString("sgdb", k.sgdb.trim()).putString("steamKey", k.steamKey.trim()).putString("steamUser", k.steamUser.trim()).apply() }
 
-    /** Las claves que hay en los datos de Atrio («keys»). Sin red: se puede probar. */
+    /** Las que se usan: las tuyas y, donde falten, las de Atrio. */
+    fun claves(c: Context): Claves {
+        val m = propias(c); val a = deAtrio(c)
+        return Claves(m.sgdb.ifBlank { a.sgdb }, m.steamKey.ifBlank { a.steamKey }, m.steamUser.ifBlank { a.steamUser }, m.rawg.ifBlank { a.rawg }, m.igdbId.ifBlank { a.igdbId }, m.igdbSecret.ifBlank { a.igdbSecret })
+    }
+    fun propias(c: Context): Claves = lee(c, "")
+    fun deAtrio(c: Context): Claves = lee(c, "a_")
+    fun poner(c: Context, k: Claves) { prefs(c).edit().putString("sgdb", k.sgdb.trim()).putString("steamKey", k.steamKey.trim()).putString("steamUser", k.steamUser.trim()).putString("rawg", k.rawg.trim()).putString("igdbId", k.igdbId.trim()).putString("igdbSecret", k.igdbSecret.trim()).apply() }
+    /** Cuándo se miraron por última vez las de Atrio (0 = nunca). */
+    fun ultimaAtrio(c: Context) = prefs(c).getLong("atrio_at", 0L)
+
+    /** Las claves que hay en los datos de Atrio («keys»; de varios dispositivos, la primera que tenga cada una). Sin red: se puede probar. */
     fun deBlobs(blobs: List<JSONObject>): Claves {
-        var s = ""; var k = ""; var u = ""
-        for (b in blobs) b.optJSONObject("keys")?.let { o -> if (s.isBlank()) s = o.optString("sgdb").trim(); if (k.isBlank()) k = o.optString("steamKey").trim(); if (u.isBlank()) u = o.optString("steamUser").trim() }
-        return Claves(s, k, u)
+        val v = HashMap<String, String>()
+        for (b in blobs) b.optJSONObject("keys")?.let { o -> for (k in NOMBRES) if (v[k].isNullOrBlank()) v[k] = o.optString(k).trim() }
+        return Claves(v["sgdb"].orEmpty(), v["steamKey"].orEmpty(), v["steamUser"].orEmpty(), v["rawg"].orEmpty(), v["igdbId"].orEmpty(), v["igdbSecret"].orEmpty())
     }
 
-    /** Baja las claves de Atrio y las guarda (sin tocar las tuyas). Bloqueante (red). */
+    /** Guarda las de Atrio (sin tocar las tuyas). Sin red: se puede probar. */
+    fun aplicarDeAtrio(c: Context, k: Claves) {
+        prefs(c).edit().putString("a_sgdb", k.sgdb).putString("a_steamKey", k.steamKey).putString("a_steamUser", k.steamUser).putString("a_rawg", k.rawg).putString("a_igdbId", k.igdbId).putString("a_igdbSecret", k.igdbSecret)
+            .putLong("atrio_at", System.currentTimeMillis()).apply()
+    }
+
+    /** Baja las claves de Atrio y las guarda (sin tocar las tuyas). Devuelve si ha podido leerlas. Bloqueante (red). */
     fun refrescarDeAtrio(c: Context): Boolean {
         val b = runCatching { ImportarAtrio.blobs() }.getOrNull() ?: return false
-        val k = deBlobs(b)
-        prefs(c).edit().putString("a_sgdb", k.sgdb).putString("a_steamKey", k.steamKey).putString("a_steamUser", k.steamUser).apply()
-        return true
+        aplicarDeAtrio(c, deBlobs(b)); return true
     }
 
     fun ultimaSteam(c: Context) = prefs(c).getLong("steam_at", 0L)
@@ -158,7 +173,7 @@ object Servicios {
     /** Trae las horas de Steam y las pone. Devuelve el mensaje para la interfaz. Bloqueante (red). */
     suspend fun traerHorasSteam(c: Context): String {
         val k = claves(c)
-        if (k.steamKey.isBlank() || k.steamUser.isBlank()) return "Faltan la clave y el perfil de Steam (Ajustes → Servicios; o ponlos en Atrio)."
+        if (k.steamKey.isBlank() || k.steamUser.isBlank()) return "Faltan la clave y el perfil de Steam: ponlos aquí abajo, o en Atrio y sincroniza."
         return try {
             val n = Steam.aplicar(Steam.jugados(k.steamUser, k.steamKey)); anotaSteam(c)
             if (n == 0) "Horas de Steam al día (ningún juego ha cambiado)." else "Horas de Steam puestas en $n ${if (n == 1) "juego" else "juegos"}."
@@ -221,15 +236,28 @@ fun DialogoSgdb(j: Juego, alCerrar: () -> Unit, alElegir: (String) -> Unit) {
 fun SeccionServicios() {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val atrio = remember { Servicios.deAtrio(ctx) }
+    var atrio by remember { mutableStateOf(Servicios.deAtrio(ctx)) }
     var p by remember { mutableStateOf(Servicios.propias(ctx)) }
     var msg by remember { mutableStateOf("") }
     var ocupado by remember { mutableStateOf(false) }
+    var mirando by remember { mutableStateOf(false) }
     fun guarda(n: Servicios.Claves) { p = n; Servicios.poner(ctx, n) }
-    Cuerpo(if (atrio.sgdb.isNotBlank() || atrio.steamKey.isNotBlank()) "Las claves que tienes en Atrio ya se usan aquí (se cogen de tu cuenta). Lo que pongas abajo manda." else "SteamGridDB da las portadas de los juegos; Steam, tus horas. Si las pones en Atrio, se cogen de tu cuenta al vincularla.", tam = 12)
-    CampoRevista("SteamGridDB", p.sgdb, if (atrio.sgdb.isNotBlank()) "la de Atrio" else "API key (steamgriddb.com → Preferencias → API)") { guarda(Servicios.Claves(it, p.steamKey, p.steamUser)) }
-    CampoRevista("Steam", p.steamKey, if (atrio.steamKey.isNotBlank()) "la de Atrio" else "clave de Steam (steamcommunity.com/dev/apikey)", secreto = true) { guarda(Servicios.Claves(p.sgdb, it, p.steamUser)) }
-    CampoRevista("Perfil", p.steamUser, if (atrio.steamUser.isNotBlank()) "el de Atrio" else "URL del perfil, nombre o SteamID64") { guarda(Servicios.Claves(p.sgdb, p.steamKey, it)) }
+    // Al abrir Ajustes, si hay cuenta, se miran las de Atrio (por si las has cambiado allí)
+    LaunchedEffect(Unit) { if (Cuenta.vinculada) { mirando = true; withContext(Dispatchers.IO) { runCatching { Servicios.refrescarDeAtrio(ctx) } }; atrio = Servicios.deAtrio(ctx); mirando = false } }
+    /** Qué hay de cada clave: la tuya, la de Atrio o ninguna. */
+    fun estado(mia: String, deAtrio: String) = when { mia.isNotBlank() -> "la tuya"; deAtrio.isNotBlank() -> "la de Atrio"; else -> "ninguna" }
+    val resumen = listOf("SteamGridDB" to estado(p.sgdb, atrio.sgdb), "Steam" to estado(p.steamKey, atrio.steamKey) + (if (p.steamUser.isBlank() && atrio.steamUser.isBlank()) ", sin perfil" else ""),
+        "RAWG" to estado(p.rawg, atrio.rawg), "IGDB" to estado(p.igdbId, atrio.igdbId), "kDrive" to (if (KDrive.on(ctx)) "conectado" else "sin conectar (abajo, en Actualizaciones)"))
+    Cuerpo("SteamGridDB da las portadas; Steam, tus horas; RAWG e IGDB, los datos de cada juego (fecha, estudio, géneros, lo que suele durar). Lo que pongas aquí manda; si lo dejas vacío, se usa lo que tengas en Atrio (viene con tu cuenta).", tam = 12)
+    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 6.dp)) { resumen.forEach { (n, v) -> MagFact(n, v) } }
+    if (mirando) Text("Mirando las de Atrio…", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp)
+    else if (Cuenta.vinculada && Servicios.ultimaAtrio(ctx) == 0L) Text("Todavía no se han leído las de Atrio: sincroniza (arriba).", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp)
+    CampoRevista("SteamGridDB", p.sgdb, if (atrio.sgdb.isNotBlank()) "la de Atrio" else "API key (steamgriddb.com → Preferencias → API)") { guarda(p.copia(sgdb = it)) }
+    CampoRevista("Steam", p.steamKey, if (atrio.steamKey.isNotBlank()) "la de Atrio" else "clave de Steam (steamcommunity.com/dev/apikey)", secreto = true) { guarda(p.copia(steamKey = it)) }
+    CampoRevista("Perfil", p.steamUser, if (atrio.steamUser.isNotBlank()) "el de Atrio" else "URL del perfil, nombre o SteamID64") { guarda(p.copia(steamUser = it)) }
+    CampoRevista("RAWG", p.rawg, if (atrio.rawg.isNotBlank()) "la de Atrio" else "API key (rawg.io/apidocs)") { guarda(p.copia(rawg = it)) }
+    CampoRevista("IGDB (Client ID)", p.igdbId, if (atrio.igdbId.isNotBlank()) "el de Atrio" else "Client ID de Twitch (dev.twitch.tv)") { guarda(p.copia(igdbId = it)) }
+    CampoRevista("IGDB (secreto)", p.igdbSecret, if (atrio.igdbSecret.isNotBlank()) "el de Atrio" else "secreto de esa aplicación", secreto = true) { guarda(p.copia(igdbSecret = it)) }
     Filete(1.dp, Line)
     MagLink(if (ocupado) "Un momento…" else "Traer las horas de Steam", "Las pone en los juegos de Hiedra que se llamen igual (los del PC ya las traen de Atrio). La biblioteca de Steam tiene que ser pública.") {
         if (ocupado) return@MagLink
@@ -238,3 +266,7 @@ fun SeccionServicios() {
     }
     if (msg.isNotBlank()) Text(msg, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp))
 }
+
+/** Una copia con algún campo cambiado (como copy() de un data class, para las claves). */
+fun Servicios.Claves.copia(sgdb: String = this.sgdb, steamKey: String = this.steamKey, steamUser: String = this.steamUser, rawg: String = this.rawg, igdbId: String = this.igdbId, igdbSecret: String = this.igdbSecret) =
+    Servicios.Claves(sgdb, steamKey, steamUser, rawg, igdbId, igdbSecret)

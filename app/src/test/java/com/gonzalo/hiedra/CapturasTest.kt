@@ -41,6 +41,9 @@ class CapturasTest {
         Ajustes.portadasLibretro = false
         Biblioteca.cargada = true
         Biblioteca.juegos.clear(); Archivos.limpiarParaPruebas()
+        // Los datos de fuera: sin red, con dos de ejemplo
+        Datos.activo = false; Datos.cargar(ctx)
+        Datos.poner("r1", DatosJuego("RAWG", "1/2/2005", listOf("Game Freak"), listOf("Nintendo"), listOf("RPG", "Aventura"), "La tercera versión de Hoenn: Rayquaza, el Frente de Batalla y los dos equipos a la vez.", 76, "IGDB · Pokémon Emerald · 310 jugadores"))
         val ahora = System.currentTimeMillis()
         fun rom(n: String, s: String, k: Int, fav: Boolean = false, jug: Long = 0, ms: Long = 0, veces: Int = 0) {
             val l = Lanzador.rom(s, n); Archivos.poner(l.clave, "content://x/$k", "")
@@ -52,10 +55,13 @@ class CapturasTest {
         Biblioteca.juegos.add(Juego("a1", "Stardew Valley", lanzadores = listOf(Lanzador.app("com.chucklefish.stardewvalley")), anadido = ahora - 9000))
         Biblioteca.juegos.add(Juego("w1", "PokéRogue", lanzadores = listOf(Lanzador.web("https://pokerogue.net")), anadido = ahora - 10000, ultima = ahora - 600_000, propias = Horas(5400_000, 3)))
         fun estado(id: String, e: Estado) { val i = Biblioteca.juegos.indexOfFirst { it.id == id }; Biblioteca.juegos[i] = Biblioteca.juegos[i].conEstado(e, ahora - 86_400_000L * 3) }
+        Biblioteca.juegos[0] = Biblioteca.juegos[0].copy(durHistoria = 36 * 60, durExtras = 70 * 60, durCompleto = 140 * 60)
         estado("r1", Estado.PASADO); estado("r7", Estado.PASADO); estado("r5", Estado.JUGANDO); estado("w1", Estado.JUGANDO); estado("r4", Estado.ABANDONADO)
         // Un juego de PC pasado, con horas de Steam y de Carmesí (sin lanzador aquí), y uno de Switch a medias
-        Biblioteca.juegos.add(nuevoJuego("Hades", "PC", anadido = ahora - 20_000).conEstado(Estado.PASADO, ahora - 86_400_000L * 10).copy(
-            externas = mapOf(Fuentes.STEAM to Horas(40 * 3600_000L), Fuentes.carmesi("viejo") to Horas(2 * 3600_000L)), otrasClaves = listOf("juego:hades"), durHistoria = 22 * 60, durExtras = 55 * 60, durCompleto = 95 * 60))
+        val hades = nuevoJuego("Hades", "PC", anadido = ahora - 20_000).conEstado(Estado.PASADO, ahora - 86_400_000L * 10).copy(
+            externas = mapOf(Fuentes.STEAM to Horas(40 * 3600_000L), Fuentes.carmesi("viejo") to Horas(2 * 3600_000L)), otrasClaves = listOf("juego:hades"), durHistoria = 22 * 60, durExtras = 55 * 60, durCompleto = 95 * 60)
+        Biblioteca.juegos.add(hades)
+        Datos.poner(hades.id, DatosJuego("Steam", "17 SEP 2020", listOf("Supergiant Games"), listOf("Supergiant Games"), listOf("Acción", "Indie", "Rol"), "Desafía al dios de los muertos y escapa del inframundo en este roguelike de Supergiant.", 93))
         Biblioteca.juegos.add(nuevoJuego("Tears of the Kingdom", "Switch", anadido = ahora - 30_000).conEstado(Estado.JUGANDO).copy(propias = Horas(25 * 3600_000L, 9), ultima = ahora - 7200_000))
         // Un juego con dos maneras de abrirse: la ROM aquí y el mismo juego en el PC
         Biblioteca.juegos[Biblioteca.juegos.indexOfFirst { it.id == "r7" }] = Biblioteca.por("r7")!!.conLanzador(Lanzador.pc("steam:367520", "pc1")).copy(externas = mapOf(Fuentes.pc("pc1") to Horas(30 * 3600_000L)))
@@ -77,12 +83,12 @@ class CapturasTest {
 
     private fun ir(texto: String) { rule.onNodeWithText(texto).performScrollTo().performClick() }
     private fun tocarVisible(texto: String) {
-        val nodos = rule.onAllNodesWithText(texto, substring = true).fetchSemanticsNodes()
+        val nodos = rule.onAllNodesWithText(texto, substring = true, useUnmergedTree = true).fetchSemanticsNodes()
         val ancho = rule.onRoot().fetchSemanticsNode().size.width
         val i = nodos.indexOfFirst { it.boundsInRoot.left >= 0f && it.boundsInRoot.right <= ancho }
-        rule.onAllNodesWithText(texto, substring = true)[if (i < 0) 0 else i].performClick(); rule.waitForIdle()
+        rule.onAllNodesWithText(texto, substring = true, useUnmergedTree = true)[if (i < 0) 0 else i].performScrollTo().performClick(); rule.waitForIdle()
     }
-    private fun pulsar(texto: String) { rule.onNodeWithText(texto).performClick(); rule.waitForIdle() }
+    private fun pulsar(texto: String) { val n = rule.onNodeWithText(texto); runCatching { n.performScrollTo() }; n.performClick(); rule.waitForIdle() }
 
     @Test
     fun interfaces() {
@@ -188,6 +194,20 @@ class CapturasTest {
         ir("PASADO")
         rule.onAllNodesWithText("Pokémon Esmeralda", substring = true, useUnmergedTree = true)[0].performClick()
         rule.onNodeWithText("EN AZABACHE").performScrollTo(); foto("12_ficha_casillas")
+        rule.onNodeWithText("Datos de").performScrollTo(); foto("12b_ficha_datos")
+        pulsar("← VOLVER")
+        tocarVisible("Hades")
+        rule.onNodeWithText("Supergiant Games", substring = true).assertExists()
+        rule.onNodeWithText("Datos de").performScrollTo(); foto("12c_ficha_datos_steam")
+    }
+
+    @Test
+    fun servicios() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra()
+        montar(oscuro = false)
+        rule.onNodeWithContentDescription("Ajustes").performClick()
+        rule.onNodeWithText("Traer las horas de Steam", substring = true).performScrollTo(); foto("31_ajustes_servicios")
     }
 
     @Test

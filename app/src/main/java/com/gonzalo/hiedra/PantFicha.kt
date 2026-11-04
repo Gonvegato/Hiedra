@@ -98,6 +98,9 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
     var notas by remember { mutableStateOf(NotaAzabache.cargar(ctx)) }
     LaunchedEffect(Unit) { if (Cuenta.vinculada && NotaAzabache.vieja(ctx)) withContext(Dispatchers.IO) { if (NotaAzabache.refrescar(ctx)) notas = NotaAzabache.cargar(ctx) } }
     LaunchedEffect(abrirPortada) { if (abrirPortada) alVerPortada() }
+    // Los datos de fuera (fecha, estudio, géneros, lo que suele durar): se piden si faltan o son viejos
+    var buscandoDatos by remember(id) { mutableStateOf(false) }
+    LaunchedEffect(id) { Datos.cargar(ctx); if (Datos.activo && Datos.hacenFalta(id)) { buscandoDatos = true; runCatching { Datos.pedir(ctx, j) }; buscandoDatos = false } }
     val cambiarPortada = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { u ->
         if (u != null) scope.launch { guardarPortada(ctx, j.id, u)?.let { Biblioteca.poner(Biblioteca.por(j.id)!!.copy(portada = it, zoom = 1f, ox = 0f, oy = 0f)) } }
     }
@@ -203,6 +206,7 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
                 if (nota.resena.isNotBlank()) Text(nota.resena, color = Charcoal, fontFamily = Display, fontSize = 15.sp, lineHeight = 21.sp, maxLines = 6, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp))
             }
         }
+        val datos = Datos.de[j.id]
         if (j.durHistoria > 0 || j.durExtras > 0 || j.durCompleto > 0) Casilla("Lo que suele durar") {
             listOf("Historia" to j.durHistoria, "Con extras" to j.durExtras, "Al completo" to j.durCompleto).filter { it.second > 0 }.forEach { (n, m) ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
@@ -210,6 +214,37 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
                     Text(tiempoDe(m * 60_000L), color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 }
             }
+            if (!datos?.duracionDe.isNullOrBlank()) Text("Según ${datos!!.duracionDe}.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+        // Datos (como la ficha de Marfil): lo de fuera y lo de aquí, en líneas con puntos guía
+        Casilla("Datos", "Buscar de nuevo" to { scope.launch { buscandoDatos = true; runCatching { Datos.pedir(ctx, j, forzar = true) }; buscandoDatos = false } }) {
+            if (datos != null && !datos.nada) {
+                if (datos.salida.isNotBlank()) MagFact("Salida", datos.salida)
+                if (datos.desarrolladores.isNotEmpty()) MagFact(if (datos.desarrolladores.size == 1) "Estudio" else "Estudios", datos.desarrolladores.joinToString(" · "))
+                if (datos.editores.isNotEmpty() && datos.editores != datos.desarrolladores) MagFact(if (datos.editores.size == 1) "Editor" else "Editores", datos.editores.joinToString(" · "))
+                if (datos.generos.isNotEmpty()) MagFact("Géneros", datos.generos.joinToString(" · "))
+                if (datos.metacritic > 0) MagFact("Metacritic", "${datos.metacritic}/100")
+            }
+            if (j.plataforma.isNotBlank()) MagFact("Plataforma", j.plataforma)
+            j.lanzadores.forEach { l -> when (l.tipo) {
+                TipoLanzador.ROM -> MagFact("ROM", if (Archivos.tiene(l.clave)) l.archivo.ifBlank { j.titulo } else "en otro dispositivo")
+                TipoLanzador.APP -> MagFact("App", l.paquete)
+                TipoLanzador.WEB -> MagFact("Web", l.url.removePrefix("https://").removePrefix("http://").removePrefix("www."))
+                TipoLanzador.PC -> MagFact("En el PC", Suite.nombresPc[l.pcDev]?.ifBlank { null } ?: l.pcKey)
+            } }
+            if (miSaga != null) MagFact("Saga", "${miSaga.nombre} · ${miSaga.juegos.indexOf(j.id) + 1}")
+            if (j.anadido > 0) MagFact("Añadido", fechaCorta(j.anadido))
+            if (j.estado == Estado.PASADO && j.finalizado > 0) MagFact("Pasado", fechaCorta(j.finalizado))
+            if (j.veces > 0) MagFact("Partidas", "${j.veces}")
+            if (datos != null && !datos.nada && datos.fuente.isNotBlank()) MagFact("Datos de", datos.fuente)
+            val pie = when {
+                buscandoDatos -> "Buscando los datos del juego…"
+                datos == null -> if (Datos.activo) "" else "Sin datos de fuera."
+                datos.nada -> if (Servicios.claves(ctx).rawg.isBlank()) "No está en la tienda de Steam. Con una clave de RAWG (Ajustes → Servicios, o en Atrio) se buscan también los juegos de consola." else "No he encontrado este juego en Steam ni en RAWG. Si su nombre aquí no es el oficial, cámbialo en «Editar» y busca de nuevo."
+                else -> ""
+            }
+            if (pie.isNotBlank()) Text(pie, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.padding(top = 6.dp))
+            if (datos != null && datos.resumen.isNotBlank()) Text(datos.resumen, color = Charcoal, fontFamily = Display, fontSize = 15.sp, lineHeight = 21.sp, maxLines = 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(top = 10.dp))
         }
         SeccionNube(j)
         Spacer(Modifier.height(20.dp))

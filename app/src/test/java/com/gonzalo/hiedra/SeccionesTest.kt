@@ -28,7 +28,7 @@ class SeccionesTest {
     private val ctx: Context get() = ApplicationProvider.getApplicationContext()
 
     @Test fun losMenusPequenosFiltranYSeQuitanConOtroToque() {
-        Catalogo.cargar(ctx); Skin.cargar(ctx); Ajustes.cargar(ctx); Ajustes.portadasLibretro = false
+        Datos.activo = false; Catalogo.cargar(ctx); Skin.cargar(ctx); Ajustes.cargar(ctx); Ajustes.portadasLibretro = false
         Biblioteca.cargada = true; Biblioteca.juegos.clear(); Sagas.cargada = true; Sagas.lista.clear(); Archivos.limpiarParaPruebas()
         val pe = Lanzador.rom("gba", "pe"); Archivos.poner(pe.clave, "content://x", "")
         Biblioteca.juegos.add(Juego("r1", "Pokémon Esmeralda", lanzadores = listOf(pe), anadido = 1).conEstado(Estado.PASADO, 5))

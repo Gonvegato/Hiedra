@@ -15,6 +15,20 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.2.0: la ficha cuenta más, y las claves se ven
+
+- **Datos** en cada ficha, como en Marfil: cuándo salió, el estudio, el editor, los géneros, la nota de Metacritic y un resumen, más lo de aquí
+  (plataforma, ROM, app, web, PC, saga, añadido, pasado, partidas). Vienen de la **tienda de Steam** (sin clave: por el appid si es un juego de
+  Steam en tu PC, o buscándolo por nombre si coincide) y, si no está ahí, de **RAWG** (con tu clave; tiene también los juegos de consola de
+  siempre). Se guardan dos semanas en el móvil; «Buscar de nuevo» los pide otra vez.
+- **Lo que suele durar** se rellena solo en los juegos que no lo tengan: de **IGDB** (lo que registran sus jugadores: historia, con extras y al
+  completo; con tu Client ID y secreto de Twitch) o, si no, la media de horas de RAWG. Se dice de dónde salió. Solo sale en los juegos que lo tienen.
+- **Servicios**, en Ajustes: ahora se ve qué clave hay de cada servicio (la tuya, la de Atrio o ninguna) y el estado del kDrive. Y se arregla lo
+  que fallaba: Hiedra no leía las claves de Atrio nunca (la función existía pero no se llamaba); ahora se traen al vincular la cuenta, en cada
+  «Sincronizar ahora» y al abrir Ajustes. Hay campos para RAWG e IGDB.
+- El **token de kDrive no viene de la cuenta**, a propósito: todo lo que hay en `/users/<uid>` lo puede leer tu pareja (modo pareja), y el token
+  da acceso a todos tus archivos. Atrio tiene una prueba que lo prohíbe expresamente. Se pega en Ajustes → Actualizaciones, como en Atrio.
+
 ## 0.1.1
 
 - **Icono nuevo**: una hoja de hiedra rellena (sus cinco lóbulos, el tallo y los nervios vaciados) en verde claro sobre verde muy oscuro, dibujada
@@ -50,7 +64,7 @@ Generadas en el ordenador con juegos de ejemplo (`CapturasTest`, `-Proborazzi.te
 [Jugando](docs/capturas/3_juegos.png) · [Pendiente](docs/capturas/3b_pendiente.png) · [Pasado](docs/capturas/3c_pasado.png) ·
 [Pasado, solo Emulación](docs/capturas/3d_pasado_emulacion.png) · [Sagas](docs/capturas/3e_sagas.png) · [una saga](docs/capturas/3g_pagina_saga.png) ·
 [ficha](docs/capturas/6_ficha.png) · [ficha con dos lanzadores](docs/capturas/6c_ficha_dos_lanzadores.png) · [ficha sin lanzador](docs/capturas/6b_ficha_sin_lanzador.png) ·
-[ficha, casillas](docs/capturas/12_ficha_casillas.png) · [añadir](docs/capturas/9_anadir.png) · [sistemas](docs/capturas/4_sistemas.png) ·
+[ficha, casillas](docs/capturas/12_ficha_casillas.png) · [ficha, datos (RAWG)](docs/capturas/12b_ficha_datos.png) · [ficha, datos (Steam)](docs/capturas/12c_ficha_datos_steam.png) · [servicios](docs/capturas/31_ajustes_servicios.png) · [añadir](docs/capturas/9_anadir.png) · [sistemas](docs/capturas/4_sistemas.png) ·
 [Tu PC](docs/capturas/23_tu_pc.png) · [biblioteca del PC](docs/capturas/24_tu_pc_biblioteca.png) · [ficha de un juego del PC](docs/capturas/26_ficha_pc.png) ·
 [ajustes](docs/capturas/5_ajustes.png) · [ajustes con fondo](docs/capturas/30_ajustes_fondo_oscuro.png) · [vacía](docs/capturas/1_portada_vacia.png).
 Los widgets, en `docs/widgets/`.

@@ -161,11 +161,13 @@ object SincroP {
         } catch (e: Exception) { mal(c, e); false }
     }
 
-    /** Al vincular una cuenta (o a mano, «Sincronizar ahora»): baja lo de los demás y sube lo de este dispositivo. */
+    /** Al vincular una cuenta (o a mano, «Sincronizar ahora»): baja lo de los demás, sube lo de este dispositivo y trae las claves de Atrio. */
     suspend fun sincronizar(c: Context, desdeCero: Boolean = false): Boolean {
         if (desdeCero) olvidarVistos()
         bajar(c)
         val ok = subir(c, forzar = true)
+        // Las claves de servicios y el kDrive que Atrio dejó en tu cuenta (sin tocar las tuyas)
+        runCatching { Servicios.refrescarDeAtrio(c) }
         portadas(c)
         return ok
     }

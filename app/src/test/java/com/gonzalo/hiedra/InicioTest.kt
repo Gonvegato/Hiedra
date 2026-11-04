@@ -62,7 +62,7 @@ class InicioTest {
     }
 
     @Test fun laPortadaEnsenaElMenuLosEstantesYRespondeAlMando() {
-        Catalogo.cargar(ctx); Skin.cargar(ctx); Inicio.cargar(ctx); Inicio.poner(ConfigInicio(), 1)
+        Datos.activo = false; Catalogo.cargar(ctx); Skin.cargar(ctx); Inicio.cargar(ctx); Inicio.poner(ConfigInicio(), 1)
         Biblioteca.cargada = true; Biblioteca.juegos.clear(); Sagas.cargada = true; Sagas.lista.clear(); Archivos.limpiarParaPruebas()
         Biblioteca.juegos.add(rom("a", "Zelda de prueba", Estado.JUGANDO, ultima = 50))
         Biblioteca.juegos.add(rom("b", "Metroid de prueba", Estado.JUGANDO, ultima = 90))
