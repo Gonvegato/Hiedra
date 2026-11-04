@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
                         navigationBarStyle = if (oscuro) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT) else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
                     )
                 }
-                PorticoApp(fichaPedida, jugarPedido) { fichaPedida = null; jugarPedido = false }
+                HiedraApp(fichaPedida, jugarPedido) { fichaPedida = null; jugarPedido = false }
             }
         }
     }

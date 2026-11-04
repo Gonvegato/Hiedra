@@ -36,7 +36,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.20.1"
+const val VERSION = "0.1.0"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -95,6 +95,8 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
         Spacer(Modifier.height(12.dp))
         Antetitulo("Cuenta de Atrio", Modifier.padding(bottom = 4.dp))
         SeccionCuenta()
+        Filete(1.dp, Line)
+        SeccionImportarCarmesi()
         Filete(1.dp, Line)
         SeccionImportarAtrio()
         Filete(1.dp, Line)
@@ -210,7 +212,7 @@ private fun SeccionActualizaciones() {
         val ob = androidx.lifecycle.LifecycleEventObserver { _, ev -> if (ev == androidx.lifecycle.Lifecycle.Event.ON_RESUME) sobre = Actualizador.puedeReabrirSola(ctx) }
         owner.lifecycle.addObserver(ob); onDispose { owner.lifecycle.removeObserver(ob) }
     }
-    Fila("Actualizar sola", "Mira la carpeta «versiones» de tu kDrive (Hiedra-<versión>.apk; también vale Portico-<versión>.apk) y se instala sin preguntar cuando no la usas.") {
+    Fila("Actualizar sola", "Mira la carpeta «versiones» de tu kDrive (Hiedra-<versión>.apk) y se instala sin preguntar cuando no la usas.") {
         Interruptor(auto) { auto = it; Actualizador.ponActivo(ctx, it) }
     }
     if (conectado) {

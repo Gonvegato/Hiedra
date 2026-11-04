@@ -171,7 +171,7 @@ class WebJuegoActivity : ComponentActivity() {
 
     companion object {
         /** Quita el rebote y el «deslizar para recargar» de la página (y de Chromium) en la dirección vertical y horizontal. */
-        const val JS_SIN_REBOTE = "(function(){try{var id='portico-sin-rebote';if(document.getElementById(id))return;var s=document.createElement('style');s.id=id;s.textContent='html,body{overscroll-behavior:none !important}';(document.head||document.documentElement).appendChild(s);}catch(e){}})();"
+        const val JS_SIN_REBOTE = "(function(){try{var id='hiedra-sin-rebote';if(document.getElementById(id))return;var s=document.createElement('style');s.id=id;s.textContent='html,body{overscroll-behavior:none !important}';(document.head||document.documentElement).appendChild(s);}catch(e){}})();"
         fun intent(c: Context, j: Juego) = Intent(c, WebJuegoActivity::class.java)
             .putExtra("id", j.id).putExtra("url", j.url).putExtra("titulo", j.titulo).putExtra("orient", j.orientacion)
     }

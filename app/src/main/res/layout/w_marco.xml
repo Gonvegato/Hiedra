@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un widget de Carmesí: el dibujo (claro, oscuro, o los dos y el sistema elige) y encima las zonas para tocar -->
+<!-- Un widget de Hiedra: el dibujo (claro, oscuro, o los dos y el sistema elige) y encima las zonas para tocar -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/background"
     android:layout_width="match_parent"

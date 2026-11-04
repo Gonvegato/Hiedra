@@ -79,11 +79,16 @@ data class Horas(val ms: Long = 0L, val veces: Int = 0, val dias: Map<String, Lo
     }
 }
 
-/** Las fuentes externas de horas: la API de Steam y cada PC con Atrio (`pc:<dispositivo del PC>`). */
+/**
+ * Las fuentes externas de horas: la API de Steam, cada PC con Atrio (`pc:<dispositivo del PC>`) y lo jugado en cada dispositivo de Carmesí
+ * antes de pasarse a Hiedra (`carmesi:<dispositivo>`: se importa una vez y ya no cambia; viaja con la cuenta y se mezcla por máximo).
+ */
 object Fuentes {
     const val STEAM = "steam"
     fun pc(dev: String) = "pc:$dev"
     fun esPc(f: String) = f.startsWith("pc:")
+    fun carmesi(dev: String) = "carmesi:$dev"
+    fun esCarmesi(f: String) = f.startsWith("carmesi:")
 }
 
 /** Un juego de la biblioteca. Lo que no se dice aquí (dónde está cada ROM en este móvil) está en [Archivos]. */

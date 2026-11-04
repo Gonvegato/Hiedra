@@ -20,7 +20,7 @@ import org.json.JSONTokener
 import java.io.File
 
 /**
- * Traer tus juegos de Atrio (lo que no esté ya en Carmesí). Atrio sube sus datos a tu cuenta (/users/<uid>/dev/<dispositivo>/data); Hiedra los LEE
+ * Traer tus juegos de Atrio (lo que no esté ya en Hiedra). Atrio sube sus datos a tu cuenta (/users/<uid>/dev/<dispositivo>/data); Hiedra los LEE
  * (nada se cambia en Atrio) y crea de cada juego su ficha: título, plataforma, estado (jugando, pendiente, pasado, abandonado), horas, cuándo lo
  * pasaste, favorito, lo que suele durar, la portada (de internet o la foto tuya de tu kDrive) y las sagas de juegos. Las horas que vienen de Atrio
  * cuentan como de este dispositivo. Lo que ya tienes con el mismo nombre no se duplica: se completa, y se queda con la clave de Atrio

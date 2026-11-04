@@ -26,7 +26,7 @@ enum class Destino { Portada, Jugando, Pendiente, Pasado, Abandonado, Sagas, Sis
 
 /** La app: portada de revista y sus secciones, la ficha de un juego o una saga por encima y la hoja de «añadir». */
 @Composable
-fun PorticoApp(fichaPedida: String? = null, jugarPedido: Boolean = false, alAbrirPedida: () -> Unit = {}) {
+fun HiedraApp(fichaPedida: String? = null, jugarPedido: Boolean = false, alAbrirPedida: () -> Unit = {}) {
     val ctx = LocalContext.current
     var destino by rememberSaveable { mutableIntStateOf(0) }
     var buscar by rememberSaveable { mutableStateOf(false) }

@@ -90,8 +90,10 @@ para una ficha de juego.
 
 - **De Carmesí** (`/users/<uid>/portico/dev/*/data`, el formato de `Mezcla.kt` de Carmesí): cada juego pasa a un `Juego` con id nuevo,
   `claves = [k] + al`, un lanzador según su tipo (ROM/APP/WEB/PC) o ninguno (FICHA), estado, favorito, finalizado, plataforma, portada de
-  internet, encuadre, duraciones; las horas de cada dispositivo de Carmesí pasan a `ajenas[<ese dispositivo>]` (los dispositivos Carmesí
-  siguen contando como dispositivos) salvo `steam`, que pasa a `externas.steam`; las sagas (`sg`) y la portada (`ini`) se traducen a ids. Las
+  internet, encuadre, duraciones; las horas de cada dispositivo de Carmesí pasan a la fuente externa `carmesi:<ese dispositivo>` (viaja
+  con la cuenta y se mezcla por máximo: así ningún Hiedra las pierde aunque Carmesí ya no suba nada). Las de Steam y del PC no están en lo que
+  Carmesí sube (eran locales de cada dispositivo): Hiedra las vuelve a leer de Steam y del PC. Las sagas (`sg`), la portada (`ini`) y la
+  apariencia (`aj`) se traducen a ids / se aplican. Las
   portadas tuyas se bajan de kDrive (`nube/portadas/<kid>`). Dos juegos de Carmesí con la misma clave entre dispositivos son uno. Carmesí no se
   toca.
 - **De Atrio** (lo que no esté en Carmesí): como hace Carmesí hoy (fichas con `juego:<título>` como clave, estado, horas, duraciones, sagas).

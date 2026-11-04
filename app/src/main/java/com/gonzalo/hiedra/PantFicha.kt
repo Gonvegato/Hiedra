@@ -146,7 +146,7 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
                 }
                 val desglose = desgloseHoras(j)
                 if (desglose.isNotBlank()) Text(desglose.uppercase(), color = Muted, fontFamily = Body, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, lineHeight = 13.sp, maxLines = 2, modifier = Modifier.padding(top = 6.dp))
-                Text(listOfNotNull(if (j.veces > 0) "${j.veces} ${if (j.veces == 1) "vez" else "veces"}" else null, if (j.ultima > 0) "última vez " + haceCuanto(j.ultima).lowercase() else null).joinToString(" · ").ifBlank { "sin empezar" },
+                Text(listOfNotNull(if (j.veces > 0) "${j.veces} ${if (j.veces == 1) "vez" else "veces"}" else null, if (j.ultima > 0) "última vez " + haceCuanto(j.ultima).lowercase() else null).joinToString(" · ").ifBlank { if (j.msJugados > 0) "jugado" else "sin empezar" },
                     color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 8.dp))
             }
         }
@@ -368,9 +368,17 @@ fun desgloseHoras(j: Juego): String {
     if (otros >= 60_000) partes += "otros móviles " + tiempoDe(otros)
     for ((k, h) in j.externas) {
         if (h.ms < 60_000) continue
-        partes += (if (Fuentes.esPc(k)) (Suite.nombresPc[k.removePrefix("pc:")]?.ifBlank { null } ?: "PC") else if (k == Fuentes.STEAM) "Steam" else k) + " " + tiempoDe(h.ms)
+        partes += nombreFuente(k) + " " + tiempoDe(h.ms)
     }
-    return if (partes.size <= 1 && j.ajenas.isEmpty() && j.externas.isEmpty()) "" else partes.joinToString(" · ")
+    return if (partes.size <= 1) "" else partes.joinToString(" · ")
+}
+
+/** Cómo se llama una fuente de horas en las pantallas. */
+fun nombreFuente(k: String): String = when {
+    Fuentes.esPc(k) -> Suite.nombresPc[k.removePrefix("pc:")]?.ifBlank { null } ?: "PC"
+    k == Fuentes.STEAM -> "Steam"
+    Fuentes.esCarmesi(k) -> "Carmesí"
+    else -> k
 }
 
 private fun fechaCorta(t: Long) = java.text.SimpleDateFormat("d/M/yyyy", java.util.Locale("es", "ES")).format(java.util.Date(t))
