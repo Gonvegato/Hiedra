@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.3.6"
+const val VERSION = "0.3.7"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -238,7 +238,7 @@ private fun SeccionActualizaciones() {
         }
     }
     if (!conectado) {
-        Text("Pega tu token de kDrive y el número de tu kDrive (los mismos que en Atrio). Se guardan solo en este móvil.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
+        Text("Pega tu token de kDrive y el número de tu kDrive (los mismos que en Azabache). Se guardan solo en este móvil.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         CampoRevista("Token", token, "token de kDrive", secreto = true) { token = it }
         CampoRevista("kDrive", unidad, "número o dirección") { unidad = it }
         MagLink(if (ocupado) "Comprobando…" else "Conectar", "Comprueba el token y busca tu «Mi carpeta»") {

@@ -260,6 +260,6 @@ class CapturasTest {
         montar(oscuro = false)
         foto("19_atrio_invertido_portada")
         rule.onNodeWithContentDescription("Ajustes").performClick()
-        rule.onNodeWithText("COLORES DE ATRIO", substring = true).performScrollTo(); foto("20_ajustes_colores_atrio")
+        rule.onNodeWithText("COLORES DE AZABACHE", substring = true).performScrollTo(); foto("20_ajustes_colores_atrio")
     }
 }
