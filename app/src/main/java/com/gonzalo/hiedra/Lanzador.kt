@@ -167,8 +167,27 @@ object Sesion {
     fun empezar(c: Context, j: Juego, paquete: String = "") {
         val k = if (j.estado == Estado.PENDIENTE) j.conEstado(Estado.JUGANDO) else j
         Biblioteca.poner(k.copy(ultima = System.currentTimeMillis(), propias = j.propias.copy(veces = j.propias.veces + 1)))
-        if (j.principal?.tipo != TipoLanzador.WEB) p(c).edit().putString("id", j.id).putLong("desde", System.currentTimeMillis()).putString("paq", paquete).apply()
+        if (j.principal?.tipo != TipoLanzador.WEB) {
+            p(c).edit().putString("id", j.id).putLong("desde", System.currentTimeMillis()).putString("paq", paquete).apply()
+            // Con el permiso de uso, la sesión se cierra sola cuando el juego deja de estar delante (sin esperar a volver a Hiedra)
+            if (paquete.isNotBlank()) SesionWorker.programar(c)
+        }
     }
+
+    /** ¿Hay una sesión de juego abierta (lanzada y sin cerrar)? */
+    fun abierta(c: Context): Boolean = p(c).contains("id")
+    /** Cuánto lleva abierta la sesión (0 si no hay). */
+    fun abiertaDesde(c: Context, ahora: Long = System.currentTimeMillis()): Long = p(c).getLong("desde", 0L).takeIf { it > 0 }?.let { ahora - it } ?: 0L
+
+    /** Con el permiso de uso: ¿sigue delante la app del juego de la sesión abierta? null = no se sabe (sin permiso, sin pasos). */
+    fun sigueDelante(c: Context, ahora: Long = System.currentTimeMillis()): Boolean? {
+        val p = p(c); val paq = p.getString("paq", "") ?: ""; val desde = p.getLong("desde", 0L)
+        if (paq.isBlank() || desde <= 0L) return null
+        val d = Uso.tiempoDelante(c, paq, desde, ahora) ?: return null
+        return sigueDelante(d, ahora)
+    }
+    /** Lo que dice [Uso.delante]: si contó hasta el final es que seguía delante. Sin móvil: se prueba. */
+    fun sigueDelante(d: Uso.Delante, hasta: Long): Boolean = d.ms > 0 && d.fin >= hasta
 
     /** Sin permiso de uso: todo el rato hasta volver (como mucho 12 h). */
     fun aOjo(desde: Long, ahora: Long): Long = (ahora - desde).coerceAtMost(12L * 3600_000)
@@ -177,6 +196,7 @@ object Sesion {
     fun cerrar(c: Context) {
         val p = p(c); val id = p.getString("id", null) ?: return
         val desde = p.getLong("desde", 0L); val paq = p.getString("paq", "") ?: ""; p.edit().clear().apply()
+        SesionWorker.cancelar(c)
         val ahora = System.currentTimeMillis()
         val exacto = Uso.tiempoDelante(c, paq, desde, ahora)
         val ms = exacto?.ms ?: aOjo(desde, ahora)

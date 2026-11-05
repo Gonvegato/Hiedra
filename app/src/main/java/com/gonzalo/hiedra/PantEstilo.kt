@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.3.8"
+const val VERSION = "0.3.9"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -88,7 +88,7 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
                     owner.lifecycle.addObserver(ob); onDispose { owner.lifecycle.removeObserver(ob) }
                 }
                 MagLink(if (uso) "Tiempo exacto: activado" else "Tiempo exacto: dar permiso",
-                    if (uso) "Hiedra mira cuánto estuvo delante el emulador o el juego (permiso «acceso al uso» de Android). Lo demás no se mira." else "Sin él, se cuenta todo el rato desde que abres el juego hasta que vuelves a Hiedra (como mucho 12 horas). Con el permiso «acceso al uso» de Android se cuenta solo lo que el emulador o el juego estuvo delante.") { Uso.pedir(ctx) }
+                    if (uso) "Hiedra mira cuánto estuvo delante el emulador o el juego (permiso «acceso al uso» de Android). Lo demás no se mira. Al dejar de jugar, las horas se apuntan y suben solas, aunque no vuelvas a Hiedra." else "Sin él, se cuenta todo el rato desde que abres el juego hasta que vuelves a Hiedra (como mucho 12 horas). Con el permiso «acceso al uso» de Android se cuenta solo lo que el emulador o el juego estuvo delante.") { Uso.pedir(ctx) }
                 Spacer(Modifier.height(14.dp))
                 Filete(2.dp)
                 Spacer(Modifier.height(12.dp))

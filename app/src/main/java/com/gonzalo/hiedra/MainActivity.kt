@@ -54,5 +54,9 @@ class MainActivity : ComponentActivity() {
         SubirRomsWorker.programar(c)
     }
 
-    override fun onStop() { super.onStop(); SincroP.parar(); Suite.stop() }
+    override fun onStop() {
+        super.onStop(); SincroP.parar(); Suite.stop()
+        // Android congela la app al poco de dejar de verse: si quedaba algo por subir, lo sube un trabajo de fondo (que corre igual)
+        if (Cuenta.vinculada && SincroP.hayPendiente()) SubidaWorker.encolar(applicationContext)
+    }
 }

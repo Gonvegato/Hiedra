@@ -45,6 +45,15 @@ class UsoTest {
         assertEquals(29 * M, d.ms); assertEquals(30 * M, d.fin)
     }
 
+    @Test fun sigueDelanteSiContoHastaElFinal() {
+        // Sigue delante al mirar (minuto 30): cuenta hasta el 30
+        assertTrue(Sesion.sigueDelante(Uso.delante(listOf(paso(1, true)), 0, 30 * M)!!, 30 * M))
+        // Salió en el 20: ya no está delante
+        assertFalse(Sesion.sigueDelante(Uso.delante(listOf(paso(1, true), paso(20, false)), 0, 30 * M)!!, 30 * M))
+        // Nunca estuvo delante (0 ms): no está
+        assertFalse(Sesion.sigueDelante(Uso.delante(listOf(paso(20, false), paso(20, false)), 0, 30 * M)!!.let { Uso.Delante(0, it.fin) }, 30 * M))
+    }
+
     @Test fun sinPasosNoSeSabe() {
         assertNull(Uso.delante(emptyList(), 0, 60 * M))
         assertNull(Uso.delante(listOf(paso(1, true)), 60 * M, 0))

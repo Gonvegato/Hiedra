@@ -15,6 +15,14 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.9
+
+- Lo que no llegó a subirse (sin red al volver de jugar, o Android congeló Hiedra antes de acabar) lo sube un trabajo de fondo
+  (SubidaWorker) en cuanto hay red. Si Hiedra ya lo subió, no hace nada.
+- Con el permiso de uso, la sesión de juego se cierra sola cuando el emulador (o el juego) deja de estar delante, aunque no vuelvas a
+  Hiedra: cada cuarto de hora se mira (SesionWorker) y, al cerrarla, las horas se apuntan y suben a tu cuenta al momento (Azabache las
+  ve en su Diario). Antes solo se apuntaban al abrir Hiedra otra vez.
+
 ## 0.3.8
 
 - **Arreglo del tiempo exacto**: con el permiso de uso, un emulador con varias pantallas (Dolphin, PPSSPP, DuckStation… pasan de su menú a la
