@@ -15,7 +15,7 @@ import org.json.JSONObject
  */
 
 /** Los estantes que puede tener la portada. */
-enum class Estante(val nombre: String) { JUGANDO("Sigue jugando"), FIJADOS("Mis elegidos"), PENDIENTE("Pendiente"), SAGAS("Sagas"), PC("Tu PC"), PASADO("Pasado") }
+enum class Estante(val nombre: String) { JUGANDO("Sigue jugando"), FIJADOS("Mis elegidos"), PENDIENTE("Pendientes"), SAGAS("Sagas"), PC("Tu PC"), PASADO("Pasados") }
 
 /** Un estante en la portada: cuál, si va con portadas grandes y si está a la vista. */
 data class FilaInicio(val estante: Estante, val grande: Boolean = false, val activa: Boolean = true)

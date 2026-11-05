@@ -187,8 +187,8 @@ fun PantInicio(alAbrir: (Juego) -> Unit, alJugar: (Juego) -> Unit, alAnadir: (Ti
     val destacado = enDirecto ?: Inicio.destacado(juegos)
 
     val secciones = listOf<Pair<String, () -> Unit>>(
-        "Jugando" to { alIr(Destino.Jugando) }, "Pendiente" to { alIr(Destino.Pendiente) }, "Pasado" to { alIr(Destino.Pasado) },
-        "Abandonado" to { alIr(Destino.Abandonado) }, "Sagas" to { alIr(Destino.Sagas) }, "Tu PC" to { alIr(Destino.PC) }
+        "Jugando" to { alIr(Destino.Jugando) }, "Pendientes" to { alIr(Destino.Pendiente) }, "Pasados" to { alIr(Destino.Pasado) },
+        "Abandonados" to { alIr(Destino.Abandonado) }, "Sagas" to { alIr(Destino.Sagas) }, "Tu PC" to { alIr(Destino.PC) }
     )
 
     // La cabecera y el menú, exactamente como en la portada de Atrio (RevistaHome): mismos márgenes, mismo tamaño de cabecera, de filetes y de letra

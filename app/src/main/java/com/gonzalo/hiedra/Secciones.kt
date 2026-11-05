@@ -32,6 +32,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 
 /*
  * Las secciones de Hiedra, como las de Marfil y las de Atrio: páginas por las que te mueves con el dedo o con las pestañas
@@ -282,7 +286,7 @@ fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Juego) -> Un
         }
         Filete(3.dp)
         if (buscando) CampoBusquedaRevista(busca, "título, sistema o saga", foco) { busca = it }
-        PestanasPaginas(listOf("Jugando", "Pendiente", "Pasado", "Abandonado", "Sagas"), pager.currentPage, cuentas) { i -> ambito.launch { pager.animateScrollToPage(i) } }
+        PestanasPaginas(listOf("Jugando", "Pendientes", "Pasados", "Abandonados", "Sagas"), pager.currentPage, cuentas) { i -> ambito.launch { pager.animateScrollToPage(i) } }
         if (busca.isNotBlank()) Resultados(busca, todos, alAbrir, alJugar)
         // (sin páginas vecinas precompuestas: con ellas, en las páginas que no son la primera los enlaces de la cabecera no recibían el toque)
         else HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), key = { paginas[it].name }) { i ->
@@ -300,14 +304,26 @@ fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Juego) -> Un
 /** Las pestañas de las secciones (como las de Atrio): la elegida en tinta con el subrayado de acento; su número, en acento. Si no caben, se deslizan y la elegida siempre se ve. */
 @Composable
 private fun PestanasPaginas(nombres: List<String>, sel: Int, cuentas: List<Int>, onSel: (Int) -> Unit) {
+    // La fila se desplaza sola solo si la pestaña elegida no se ve entera (y entonces la centra): así no se corta la de al lado
     val scroll = rememberScrollState()
-    val xs = remember { mutableStateMapOf<Int, Int>() }
-    LaunchedEffect(sel, xs[sel]) { xs[sel]?.let { scroll.animateScrollTo((it - 12).coerceAtLeast(0)) } }
+    val sitios = remember { mutableStateMapOf<Int, Pair<Int, Int>>() }   // pestaña → (x, ancho), en coordenadas del contenido
+    var anchoFila by remember { mutableIntStateOf(0) }
+    LaunchedEffect(sel, sitios[sel], anchoFila) {
+        val (x, w) = sitios[sel] ?: return@LaunchedEffect
+        if (anchoFila <= 0) return@LaunchedEffect
+        if (x < scroll.value || x + w > scroll.value + anchoFila) scroll.animateScrollTo((x + w / 2 - anchoFila / 2).coerceIn(0, scroll.maxValue))
+    }
     Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().horizontalScroll(scroll), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.fillMaxWidth().onGloballyPositioned { anchoFila = it.size.width }.horizontalScroll(scroll).drawWithContent {
+                // Un degradado en los bordes cuando hay más pestañas por un lado o por otro (para que no parezcan cortadas)
+                drawContent()
+                val f = 28.dp.toPx()
+                if (scroll.value > 0) drawRect(Brush.horizontalGradient(listOf(Paper, Color.Transparent), 0f, f), Offset.Zero, Size(f, size.height))
+                if (scroll.value < scroll.maxValue) drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Paper), size.width - f, size.width), Offset(size.width - f, 0f), Size(f, size.height))
+            }, horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.Bottom) {
             nombres.forEachIndexed { i, n ->
                 val on = i == sel
-                Row(Modifier.onGloballyPositioned { xs[i] = it.positionInParent().x.toInt() }.clickable { onSel(i) }
+                Row(Modifier.onGloballyPositioned { c -> sitios[i] = (c.positionInParent().x + scroll.value).roundToInt() to c.size.width }.clickable { onSel(i) }
                     .drawBehind { if (on) drawRect(Acento, topLeft = Offset(0f, size.height - 3.dp.toPx()), size = Size(size.width, 3.dp.toPx())) }
                     .padding(top = 12.dp, bottom = 10.dp), verticalAlignment = Alignment.Bottom) {
                     Text(n.uppercase(), color = if (on) Charcoal else Muted, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp, maxLines = 1)

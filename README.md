@@ -15,6 +15,14 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.11
+
+- Las secciones se llaman en plural, como en Marfil y Azabache: Jugando · Pendientes · Pasados · Abandonados · Sagas (también los estantes
+  de la pantalla de inicio). El estado de cada juego en su ficha sigue en singular (Pendiente, Pasado…).
+- Las pestañas (secciones, Ajustes) se desplazan solas solo cuando la elegida no se ve entera, y entonces la centran: antes se
+  pegaba al borde izquierdo y la de al lado salía cortada.
+  Y en los bordes, un degradado cuando hay más pestañas por ese lado.
+
 ## 0.3.10
 
 - Arreglo del cierre automático de la sesión (0.3.9): la siguiente mirada se encadena detrás de la que está corriendo, en vez de
@@ -105,7 +113,7 @@ Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está c
 ## 0.1.0: la primera
 
 - **Lo de Carmesí, entero, sobre el modelo nuevo**: portada de revista con el destacado, los estantes (orden, tamaño, a la vista, «Mis elegidos»)
-  y el mando; las secciones Jugando · Pendiente · Pasado · Abandonado · Sagas como páginas, con los menús pequeños PC · Emulación · Android · Web
+  y el mando; las secciones Jugando · Pendientes · Pasados · Abandonados · Sagas como páginas, con los menús pequeños PC · Emulación · Android · Web
   y los órdenes; la ficha (estado, favorito, portada propia o de internet con su encuadre, lo que suele durar, la saga, «En Azabache» de solo
   lectura, la nube); añadir (carpetas de ROMs con escaneo, apps, webs, el PC); sistemas y emuladores; **Tu PC** (en directo, biblioteca, capturas,
   equipo; jugar en el PC o en streaming); las horas de Steam; guardados, ROMs y portadas por tu kDrive; el buscador de portadas; la apariencia;
@@ -126,8 +134,8 @@ Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está c
 
 Generadas en el ordenador con juegos de ejemplo (`CapturasTest`, `-Proborazzi.test.record=true`): [portada](docs/capturas/2_portada.png) ·
 [estantes](docs/capturas/20b_inicio_estantes.png) · [editando la portada](docs/capturas/21_inicio_editando.png) · [en oscuro](docs/capturas/7_portada_oscuro.png) ·
-[Jugando](docs/capturas/3_juegos.png) · [Pendiente](docs/capturas/3b_pendiente.png) · [Pasado](docs/capturas/3c_pasado.png) ·
-[Pasado, solo Emulación](docs/capturas/3d_pasado_emulacion.png) · [Sagas](docs/capturas/3e_sagas.png) · [una saga](docs/capturas/3g_pagina_saga.png) ·
+[Jugando](docs/capturas/3_juegos.png) · [Pendientes](docs/capturas/3b_pendiente.png) · [Pasados](docs/capturas/3c_pasado.png) ·
+[Pasados, solo Emulación](docs/capturas/3d_pasado_emulacion.png) · [Sagas](docs/capturas/3e_sagas.png) · [una saga](docs/capturas/3g_pagina_saga.png) ·
 [ficha](docs/capturas/6_ficha.png) · [ficha con dos lanzadores](docs/capturas/6c_ficha_dos_lanzadores.png) · [ficha sin lanzador](docs/capturas/6b_ficha_sin_lanzador.png) ·
 [ficha, casillas](docs/capturas/12_ficha_casillas.png) · [ficha, datos (RAWG)](docs/capturas/12b_ficha_datos.png) · [ficha, datos (Steam)](docs/capturas/12c_ficha_datos_steam.png) · [servicios](docs/capturas/31_ajustes_servicios.png) · [añadir](docs/capturas/9_anadir.png) · [sistemas](docs/capturas/4_sistemas.png) ·
 [Tu PC](docs/capturas/23_tu_pc.png) · [biblioteca del PC](docs/capturas/24_tu_pc_biblioteca.png) · [ficha de un juego del PC](docs/capturas/26_ficha_pc.png) ·

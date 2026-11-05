@@ -33,6 +33,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.concurrent.ConcurrentHashMap
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import kotlin.math.roundToInt
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 
 /*
  * Las piezas de la interfaz «Revista» de Atrio (RevistaUI.kt, Revista.kt, Ediciones.kt, Vitrina.kt), tal cual y con los mismos
@@ -73,11 +78,27 @@ fun VolverRevista(onClick: () -> Unit, texto: String = "Volver") = EnlaceRevista
 /** Las pestañas de una página: versalitas; la elegida en tinta con el subrayado de acento; su número, en acento. */
 @Composable
 fun PestanasRevista(nombres: List<String>, sel: Int, modifier: Modifier = Modifier, cuentas: List<Int?>? = null, onSel: (Int) -> Unit) {
+    // La fila se desplaza sola hasta la pestaña elegida si no se ve entera (al entrar en «Sagas» desde la portada, por ejemplo)
+    val desplazamiento = rememberScrollState()
+    val sitios = remember { mutableStateMapOf<Int, Pair<Int, Int>>() }   // pestaña → (x, ancho), en coordenadas del contenido
+    var anchoFila by remember { mutableIntStateOf(0) }
+    LaunchedEffect(sel, sitios[sel], anchoFila) {
+        val (x, w) = sitios[sel] ?: return@LaunchedEffect
+        if (anchoFila <= 0) return@LaunchedEffect
+        if (x < desplazamiento.value || x + w > desplazamiento.value + anchoFila) desplazamiento.animateScrollTo((x + w / 2 - anchoFila / 2).coerceIn(0, desplazamiento.maxValue))
+    }
     Column(modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.fillMaxWidth().onGloballyPositioned { anchoFila = it.size.width }.horizontalScroll(desplazamiento).drawWithContent {
+                // Un degradado en los bordes cuando hay más pestañas por un lado o por otro (para que no parezcan cortadas)
+                drawContent()
+                val f = 28.dp.toPx()
+                if (desplazamiento.value > 0) drawRect(Brush.horizontalGradient(listOf(Paper, Color.Transparent), 0f, f), Offset.Zero, Size(f, size.height))
+                if (desplazamiento.value < desplazamiento.maxValue) drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Paper), size.width - f, size.width), Offset(size.width - f, 0f), Size(f, size.height))
+            }, horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Bottom) {
             nombres.forEachIndexed { i, n ->
                 val on = i == sel
-                Row(Modifier.semantics { selected = on; role = Role.Tab }.clickable { onSel(i) }
+                Row(Modifier.onGloballyPositioned { c -> sitios[i] = (c.positionInParent().x + desplazamiento.value).roundToInt() to c.size.width }
+                    .semantics { selected = on; role = Role.Tab }.clickable { onSel(i) }
                     .drawBehind { if (on) drawRect(Acento, topLeft = Offset(0f, size.height - 3.dp.toPx()), size = Size(size.width, 3.dp.toPx())) }
                     .padding(top = 12.dp, bottom = 10.dp), verticalAlignment = Alignment.Bottom) {
                     Text(n.uppercase(), color = if (on) Charcoal else Muted, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp, maxLines = 1)

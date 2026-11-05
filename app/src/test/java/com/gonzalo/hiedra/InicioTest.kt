@@ -69,8 +69,8 @@ class InicioTest {
         Biblioteca.juegos.add(rom("c", "Kirby de prueba"))
         var ir: Destino? = null; var jugado = ""; var abierto = ""
         rule.setContent { HiedraTheme { Surface(Modifier.fillMaxSize(), color = Paper) { PantInicio({ abierto = it.titulo }, { jugado = it.titulo }, {}, { ir = it }, {}) } } }
-        listOf("JUGANDO", "PENDIENTE", "PASADO", "ABANDONADO", "SAGAS", "TU PC").forEach { rule.onAllNodesWithText(it)[0].assertExists() }
-        rule.onAllNodesWithText("PASADO")[0].performClick(); assertEquals(Destino.Pasado, ir)
+        listOf("JUGANDO", "PENDIENTES", "PASADOS", "ABANDONADOS", "SAGAS", "TU PC").forEach { rule.onAllNodesWithText(it)[0].assertExists() }
+        rule.onAllNodesWithText("PASADOS")[0].performClick(); assertEquals(Destino.Pasado, ir)
         rule.onNodeWithTag("destacado").assertExists(); rule.onAllNodesWithText("Metroid de prueba", useUnmergedTree = true)[0].assertExists()
         rule.onNodeWithText("SIGUE JUGANDO").assertExists(); rule.onNodeWithTag("loseta-a").assertExists(); rule.onNodeWithTag("loseta-c").assertExists()
         rule.onNodeWithTag("loseta-a").performClick(); assertEquals("Zelda de prueba", jugado)
