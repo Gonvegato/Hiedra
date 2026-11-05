@@ -15,6 +15,12 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.4.4
+
+- **Cambiar qué juego sigue un widget sin quitarlo**: déjalo pulsado en el escritorio y sale «Reconfigurar» (Android 12 o más, en los
+  lanzadores que lo ofrecen, como el de Pixel): abre la misma lista que al ponerlo («Sigue jugando» y «En portada»). El menú del dedo pulsado es del escritorio,
+  no de la app: lo único que una app puede hacer es decir que su widget se puede reconfigurar, y eso es lo que se ha hecho.
+
 ## 0.4.3
 
 - **Las portadas que eliges, de verdad en todos tus móviles** (como los libros en Atrio). Antes solo se miraban cuando cambiaba la

@@ -9,4 +9,5 @@
     android:previewImage="@drawable/w_prev_jugando"
     android:description="@string/w_jugando_d"
     android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable"
     android:configure="com.gonzalo.hiedra.ConfigWidgetActivity" />
