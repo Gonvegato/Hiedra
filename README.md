@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.10
+
+- Arreglo del cierre automático de la sesión (0.3.9): la siguiente mirada se encadena detrás de la que está corriendo, en vez de
+  reemplazarla (reemplazarla podía cancelar la que estaba a medias y dejar la sesión sin cerrar).
+
 ## 0.3.9
 
 - Lo que no llegó a subirse (sin red al volver de jugar, o Android congeló Hiedra antes de acabar) lo sube un trabajo de fondo

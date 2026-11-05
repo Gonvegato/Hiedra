@@ -19,7 +19,7 @@ class SesionWorker(ctx: Context, p: WorkerParameters) : CoroutineWorker(ctx, p) 
         val c = applicationContext
         if (!Sesion.abierta(c) || Actualizador.primerPlano) return Result.success()   // ya cerrada, o Hiedra delante (la cierra ella)
         when (Sesion.sigueDelante(c)) {
-            true, null -> { if (Sesion.abiertaDesde(c) < MAXIMO) programar(c, ESPERA) }   // sigue jugando (o no se sabe): se vuelve a mirar
+            true, null -> { if (Sesion.abiertaDesde(c) < MAXIMO) programar(c, ESPERA, desdeElTrabajo = true) }   // sigue jugando (o no se sabe): se vuelve a mirar
             false -> {
                 iniciar(c)
                 Sesion.cerrar(c)
@@ -34,12 +34,15 @@ class SesionWorker(ctx: Context, p: WorkerParameters) : CoroutineWorker(ctx, p) 
         /** Más de 12 horas sin saber nada: se deja de mirar (al volver a Hiedra se cierra con el tope de siempre). */
         const val MAXIMO = 12L * 3_600_000L
 
-        /** Al lanzar un juego (solo sirve con el permiso de uso; sin él no hay nada que mirar). */
-        fun programar(c: Context, espera: Long = ESPERA) {
+        /**
+         * Al lanzar un juego (solo sirve con el permiso de uso; sin él no hay nada que mirar). Desde el propio trabajo ([desdeElTrabajo]),
+         * la siguiente mirada se encadena detrás de esta (reemplazarla cancelaría la que está corriendo).
+         */
+        fun programar(c: Context, espera: Long = ESPERA, desdeElTrabajo: Boolean = false) {
             if (!Uso.permitido(c)) return
             runCatching {
                 val req = OneTimeWorkRequestBuilder<SesionWorker>().setInitialDelay(espera, TimeUnit.MILLISECONDS).build()
-                WorkManager.getInstance(c).enqueueUniqueWork("sesion", ExistingWorkPolicy.REPLACE, req)
+                WorkManager.getInstance(c).enqueueUniqueWork("sesion", if (desdeElTrabajo) ExistingWorkPolicy.APPEND_OR_REPLACE else ExistingWorkPolicy.REPLACE, req)
             }
         }
 
