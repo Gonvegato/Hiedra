@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.4.4"
+const val VERSION = "0.4.5"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -62,7 +62,7 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
         Antetitulo("Sección", Modifier.padding(top = 10.dp), color = Acento, conCuadro = false)
         FitTitle("Ajustes", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
         Filete(3.dp)
-        PestanasRevista(listOf("Apariencia", "Juegos", "Servicios", "Avanzado"), pestana) { pestana = it }
+        PestanasRevista(listOf("Apariencia", "Juegos", "Cuenta", "Avanzado"), pestana) { pestana = it }
         Spacer(Modifier.height(14.dp))
 
         when (pestana) {

@@ -58,7 +58,7 @@ fun ordenar(o: Orden, l: List<Juego>): List<Juego> = when (o) {
 /** El orden que has elegido para cada sección (se recuerda al cerrar la app). */
 object OrdenGuardado {
     private fun prefs(c: Context) = c.getSharedPreferences("hiedra_orden", Context.MODE_PRIVATE)
-    fun de(c: Context, e: Estado): Orden = Orden.entries.firstOrNull { it.name == prefs(c).getString(e.name, null) } ?: ordenInicial(e)
+    fun de(c: Context, e: Estado): Orden = (Orden.entries.firstOrNull { it.name == prefs(c).getString(e.name, null) } ?: ordenInicial(e)).let { if (it == Orden.Pasados && e != Estado.PASADO) ordenInicial(e) else it }
     fun pon(c: Context, e: Estado, o: Orden) { prefs(c).edit().putString(e.name, o.name).apply() }
 }
 
@@ -78,11 +78,11 @@ fun metaJuego(j: Juego, conEstado: Boolean = false): String = listOf(
 fun FilaJuego(j: Juego, alAbrir: (Juego) -> Unit, alJugar: ((Juego) -> Unit)? = null, modifier: Modifier = Modifier, portada: Dp = 54.dp, numero: Int = 0, conEstado: Boolean = false, extra: String = "") {
     Row(modifier.fillMaxWidth().clickable { alAbrir(j) }.padding(top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (numero > 0) Text("$numero", color = Acento, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, modifier = Modifier.width(26.dp))
-        Box(Modifier.width(portada).aspectRatio(0.75f).clip(esquina(4.dp))) { PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 26) }
+        Box(Modifier.width(portada).aspectRatio(PROPORCION_PORTADA).clip(esquina(4.dp))) { PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 26) }
         Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
             Text(j.titulo, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = if (portada >= 54.dp) 20.sp else 18.sp, lineHeight = if (portada >= 54.dp) 22.sp else 20.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             val meta = listOf(metaJuego(j, conEstado), extra).filter { it.isNotBlank() }.joinToString(" · ")
-            if (meta.isNotBlank()) Text(meta.uppercase(), color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, maxLines = 2, modifier = Modifier.padding(top = 2.dp))
+            if (meta.isNotBlank()) Text(meta.uppercase(), color = Muted, fontFamily = Body, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, maxLines = 2, lineHeight = 15.sp, modifier = Modifier.padding(top = 3.dp))
         }
         if (alJugar != null && !j.sinLanzador) Text(if (j.enPc) "PC →" else "JUGAR →", color = Acento, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp, maxLines = 1,
             modifier = Modifier.clickable { alJugar(j) }.padding(start = 8.dp, top = 12.dp, bottom = 12.dp))
@@ -196,7 +196,9 @@ private fun PaginaEstante(estado: Estado, todos: List<Juego>, menu: Menu?, alMen
                 Filete(1.dp, Line)
                 MenusPequenos(menu, cuentas) { sistema = null; alMenu(it) }
                 // Cómo se ordena esta sección (se recuerda)
-                FiltrosRevista(Orden.entries.map { it.nombre }, orden.ordinal, Modifier.padding(top = 4.dp)) { i -> orden = Orden.entries[i]; OrdenGuardado.pon(ctx, estado, orden) }
+                // «Cuándo lo pasaste», solo en Pasados (en las demás secciones no tiene sentido)
+                val ordenes = Orden.entries.filter { it != Orden.Pasados || estado == Estado.PASADO }
+                FiltrosRevista(ordenes.map { it.nombre }, ordenes.indexOf(orden).coerceAtLeast(0), Modifier.padding(top = 4.dp)) { i -> orden = ordenes[i]; OrdenGuardado.pon(ctx, estado, orden) }
                 // En Emulación, también por sistema
                 if (menu == Menu.EMULACION && sistemas.size > 1) FiltrosRevista(listOf("Todos") + sistemas.map { (Catalogo.sistema(it.key)?.corto ?: it.key) + " " + it.value.size }, sistemas.indexOfFirst { it.key == sistema } + 1) { i ->
                     sistema = if (i == 0) null else sistemas[i - 1].key

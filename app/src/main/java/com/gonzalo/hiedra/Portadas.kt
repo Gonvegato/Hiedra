@@ -54,19 +54,20 @@ fun urlsLibretro(j: Juego): List<String> {
 }
 
 /** Los dos colores del degradado de un juego: el de su sistema (o un tono según el nombre) un poco movido por el título. */
+/** La proporción de una portada (ancho/alto): 2:3, la de las carátulas (SteamGridDB, cajas). La misma en la ficha, las listas y la pantalla de inicio, para que nada se recorte distinto. */
+const val PROPORCION_PORTADA = 2f / 3f
+
+/** Las telas de las portadas de letra: las mismas en Hiedra, Marfil, Cobalto y Azabache (un título, siempre el mismo color). */
+val TELAS = listOf(0xFF7A2E2E, 0xFF2F4A6B, 0xFF35523F, 0xFF5B3F6B, 0xFF8A5A2B, 0xFF3F5E63, 0xFF6B6B3A, 0xFF4A4A52).map { Color(it) }
+fun telaDe(titulo: String): Color = TELAS[(normTela(titulo).hashCode() and 0x7fffffff) % TELAS.size]
+/** La misma normalización que Marfil (así un título tiene la misma tela en las cuatro apps). */
+fun normTela(s: String): String = java.text.Normalizer.normalize(s.lowercase(), java.text.Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "").replace(Regex("[^\\p{L}\\p{N}]+"), " ").trim()
+private fun mezcla(a: Color, b: Color, t: Float) = Color(a.red + (b.red - a.red) * t, a.green + (b.green - a.green) * t, a.blue + (b.blue - a.blue) * t, 1f)
+
 fun tonosDe(j: Juego): Pair<Color, Color> {
-    val base = when (j.tipo) {
-        TipoLanzador.ROM -> Catalogo.sistema(j.sistema)?.color ?: Color(0xFF6C4DD6)
-        TipoLanzador.APP -> Color.hsv(((j.paquete.hashCode().mod(120)) + 90).toFloat(), 0.5f, 0.6f)
-        TipoLanzador.WEB -> Color.hsv(((j.url.hashCode().mod(80)) + 190).toFloat(), 0.55f, 0.62f)
-        TipoLanzador.PC -> Color.hsv((((j.clave.hashCode().mod(60)) + 340) % 360).toFloat(), 0.55f, 0.5f)
-        null -> Color.hsv(((j.clave.hashCode().mod(300)) + 20).toFloat(), 0.5f, 0.58f)
-    }
-    val shift = (j.titulo.hashCode().mod(40) - 20).toFloat()
-    val hsv = FloatArray(3).also { android.graphics.Color.colorToHSV(base.toArgb2(), it) }
-    val a = Color.hsv(((hsv[0] + shift + 360) % 360), (hsv[1] * 0.95f).coerceIn(0f, 1f), (hsv[2] * 1.12f).coerceIn(0f, 1f))
-    val b = Color.hsv(((hsv[0] + shift * 2 + 380) % 360), (hsv[1]).coerceIn(0f, 1f), (hsv[2] * 0.42f).coerceIn(0f, 1f))
-    return a to b
+    // La tela del título (como las tapas de Marfil), de un poco más clara arriba a más oscura abajo
+    val tela = telaDe(j.titulo)
+    return mezcla(tela, Color.White, 0.10f) to mezcla(tela, Color.Black, 0.32f)
 }
 private fun Color.toArgb2(): Int = android.graphics.Color.argb((alpha * 255).toInt(), (red * 255).toInt(), (green * 255).toInt(), (blue * 255).toInt())
 
@@ -117,7 +118,7 @@ fun PortadaArco(
     val hayPortada = remember(j.portada) { j.portada.isNotBlank() && File(j.portada).exists() }
     val borde = Skin.forma
     Box(
-        modifier.let { if (relleno) it else it.aspectRatio(0.75f) }
+        modifier.let { if (relleno) it else it.aspectRatio(PROPORCION_PORTADA) }
             .let { m -> if (borde.sombraDura) m.drawBehind { drawRect(Charcoal, topLeft = Offset(6.dp.toPx(), 6.dp.toPx()), size = size) } else m }
             .clip(forma).background(Brush.linearGradient(listOf(a, b), Offset.Zero, Offset(600f, 1200f)))
             .let { if (borde.borde.value > 0f) it.border(borde.borde, if (borde.bordeTinta) Charcoal else Line, forma) else it }

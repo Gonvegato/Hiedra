@@ -39,10 +39,10 @@ class DatosTest {
         val json = """{"id":9,"name":"The Legend of Zelda: The Minish Cap","released":"2004-11-04","developers":[{"name":"Capcom"},{"name":"Flagship"}],"publishers":[{"name":"Nintendo"}],
             "genres":[{"name":"Adventure"},{"name":"RPG"}],"description_raw":"Link se encoge.","metacritic":89,"playtime":16}"""
         val d = Datos.deRawg(json, ahora = 1)
-        assertEquals("RAWG", d.fuente); assertEquals("4/11/2004", d.salida); assertEquals(listOf("Capcom", "Flagship"), d.desarrolladores); assertEquals(listOf("Nintendo"), d.editores)
+        assertEquals("RAWG", d.fuente); assertEquals("4 nov 2004", d.salida); assertEquals(listOf("Capcom", "Flagship"), d.desarrolladores); assertEquals(listOf("Nintendo"), d.editores)
         assertEquals(listOf("Adventure", "RPG"), d.generos); assertEquals("Link se encoge.", d.resumen); assertEquals(89, d.metacritic)
         assertEquals(16 * 60, Datos.horasDeRawg(json)); assertEquals(0, Datos.horasDeRawg("{}"))
-        assertEquals("2004", Datos.fechaBonita("2004")); assertEquals("", Datos.fechaBonita("")); assertEquals("1/2/2020", Datos.fechaBonita("2020-02-01"))
+        assertEquals("2004", Datos.fechaBonita("2004")); assertEquals("", Datos.fechaBonita("")); assertEquals("1 feb 2020", Datos.fechaBonita("2020-02-01"))
     }
 
     @Test fun igdbDaLoQueSueleDurarEnMinutos() {

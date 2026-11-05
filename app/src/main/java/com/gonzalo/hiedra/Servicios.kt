@@ -48,7 +48,7 @@ object Sgdb {
         val c = URL(BASE + path).openConnection() as HttpURLConnection
         c.setRequestProperty("Authorization", "Bearer $key")
         c.connectTimeout = 15000; c.readTimeout = 15000
-        if (c.responseCode !in 200..299) error("SteamGridDB respondió ${c.responseCode}. Revisa la API key (Ajustes → Servicios).")
+        if (c.responseCode !in 200..299) error("SteamGridDB respondió ${c.responseCode}. Revisa la API key (Ajustes → Cuenta → Servicios).")
         return JSONObject(c.inputStream.bufferedReader().readText()).getJSONArray("data")
     }
 
@@ -203,7 +203,7 @@ fun DialogoSgdb(j: Juego, alCerrar: () -> Unit, alElegir: (String) -> Unit) {
             Antetitulo(elegido?.name ?: "SteamGridDB", Modifier.padding(top = 12.dp), color = Acento, conCuadro = false)
             if (key.isBlank()) {
                 Text("Falta la API key de SteamGridDB.", color = Charcoal, fontFamily = Display, fontSize = 20.sp, modifier = Modifier.padding(top = 10.dp))
-                Cuerpo("Se genera en tu perfil de steamgriddb.com (Preferencias → API). Ponla en Ajustes → Servicios; si ya la tienes en Atrio, se coge sola al vincular la cuenta.", modifier = Modifier.padding(top = 6.dp))
+                Cuerpo("Se genera en tu perfil de steamgriddb.com (Preferencias → API). Ponla en Ajustes → Cuenta → Servicios; si ya la tienes en Atrio, se coge sola al vincular la cuenta.", modifier = Modifier.padding(top = 6.dp))
                 return@Column
             }
             if (elegido == null) {

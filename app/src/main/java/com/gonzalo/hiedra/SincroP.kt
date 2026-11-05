@@ -154,6 +154,8 @@ object SincroP {
             if (nuevos.isNotEmpty()) {
                 val r = Mezcla.mezclar(Biblioteca.juegos.toList(), HashMap(Biblioteca.borrados), nuevos, Cuenta.dispositivo)
                 if (r.cambio) { Biblioteca.aplicarMezcla(r.juegos, r.borrados); cambio = true }
+                // Lo que otro móvil tenía con otro id (importaciones repetidas): se junta en uno
+                if (Biblioteca.unirRepetidos() > 0) cambio = true
                 val rs = Mezcla.mezclarSagas(Sagas.lista.toList(), HashMap(Sagas.borradas), nuevos, Cuenta.dispositivo)
                 if (rs.cambio) { Sagas.aplicarMezcla(rs.sagas, rs.borradas); cambio = true }
                 nuevos.map { it.inicio }.filter { it.isNotBlank() }.forEach { if (Inicio.aplicarRemoto(it)) cambio = true }

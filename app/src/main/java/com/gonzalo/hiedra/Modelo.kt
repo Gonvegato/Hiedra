@@ -257,6 +257,7 @@ object Biblioteca {
         val f = archivo!!
         if (f.exists()) runCatching { leer(f.readText()) }
         cargada = true
+        runCatching { unirRepetidos() }
     }
 
     fun leer(txt: String, reemplazar: Boolean = true) {
@@ -332,6 +333,22 @@ object Biblioteca {
         return (por(n.id) ?: n) to true
     }
 
+    /**
+     * Juegos repetidos: dos fichas con una clave en común (la misma ROM, la misma app, el mismo juego del PC o de Steam, el mismo título) y la
+     * misma plataforma (o una sin plataforma) son el mismo juego. Pasaba al importar de Atrio o de Carmesí en dos móviles: cada uno creaba su
+     * copia, con su propio id, y al quitar una volvía la del otro. Se juntan en la de id más bajo (la misma en todos tus móviles, así no se
+     * pisan) y las demás se quitan (y se quitan también en tus otros móviles). Devuelve cuántas ha juntado.
+     */
+    fun unirRepetidos(): Int {
+        val grupos = gruposRepetidos(juegos.toList())
+        var n = 0
+        for (g in grupos) {
+            val queda = g.minOf { it }
+            for (otro in g) if (otro != queda && unir(queda, otro) != null) n++
+        }
+        return n
+    }
+
     /** Une dos juegos (ver [unirJuegos]): [origenId] desaparece dentro de [destinoId]. Devuelve el resultado o null si falta alguno. */
     fun unir(destinoId: String, origenId: String): Juego? {
         val d = por(destinoId) ?: return null; val o = por(origenId) ?: return null
@@ -386,4 +403,22 @@ object Ajustes {
     fun guardar(c: Context) {
         p(c).edit().putBoolean("libretro", portadasLibretro).putString("emus", JSONObject(emuladorPorSistema as Map<*, *>).toString()).apply()
     }
+}
+
+
+/** Los grupos de ids que son el mismo juego (ver [Biblioteca.unirRepetidos]). Pura (se prueba). */
+fun gruposRepetidos(juegos: List<Juego>): List<Set<String>> {
+    val padre = HashMap<String, String>()
+    fun raiz(x: String): String { var r = x; while (padre[r] != null && padre[r] != r) r = padre[r]!!; return r }
+    fun junta(a: String, b: String) { val ra = raiz(a); val rb = raiz(b); if (ra != rb) padre[maxOf(ra, rb)] = minOf(ra, rb) }
+    juegos.forEach { padre[it.id] = it.id }
+    val porClave = HashMap<String, MutableList<Juego>>()
+    juegos.forEach { j -> j.claves.forEach { k -> porClave.getOrPut(k) { ArrayList() }.add(j) } }
+    for (l in porClave.values) for (i in l.indices) for (k in i + 1 until l.size) {
+        val a = l[i]; val b = l[k]
+        if (a.id == b.id) continue
+        val pa = a.plataforma.trim().lowercase(); val pb = b.plataforma.trim().lowercase()
+        if (pa.isBlank() || pb.isBlank() || pa == pb) junta(a.id, b.id)
+    }
+    return juegos.map { it.id }.groupBy { raiz(it) }.values.filter { it.size > 1 }.map { it.toSet() }
 }

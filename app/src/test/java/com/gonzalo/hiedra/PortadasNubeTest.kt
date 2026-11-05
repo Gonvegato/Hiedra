@@ -42,4 +42,15 @@ class PortadasNubeTest {
         assertEquals("https://sgdb/hades.png", r.juegos.single().portadaUrl)
         assertEquals(Estado.JUGANDO, r.juegos.single().estado)
     }
+
+    /** Repetidos (importar de Atrio o Carmesí en dos móviles): misma clave y misma plataforma → el mismo juego; los de otra plataforma, no. */
+    @Test fun losRepetidosSeJuntan() {
+        val a = Juego("j_b", "Baldur's Gate 3", plataforma = "PC", otrasClaves = listOf("pc:steam:1086940", "juego:baldursgate3"))
+        val b = Juego("j_a", "Baldur's Gate 3", plataforma = "PC", otrasClaves = listOf("juego:baldursgate3"))
+        val c = Juego("j_c", "Baldurs Gate 3", plataforma = "", otrasClaves = listOf("pc:steam:1086940"))
+        val otro = Juego("j_d", "Doom", plataforma = "PC", otrasClaves = listOf("juego:doom"))
+        val switch = Juego("j_e", "Doom", plataforma = "Switch", otrasClaves = listOf("juego:doom"))
+        val g = gruposRepetidos(listOf(a, b, c, otro, switch))
+        assertEquals(listOf(setOf("j_a", "j_b", "j_c")), g)
+    }
 }

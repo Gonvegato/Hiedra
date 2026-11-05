@@ -15,6 +15,25 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.4.5
+
+- **Juegos repetidos, juntados solos.** Al importar de Atrio o de Carmesí en dos móviles, cada uno creaba su copia del mismo juego (con
+  su propio id): al quitar una, volvía la del otro móvil (pasaba, por ejemplo, con Baldur's Gate 3). Ahora, dos fichas con una clave en común
+  (la misma ROM, app, juego de Steam o del PC, o el mismo título) y la misma plataforma se juntan en una (horas sumadas, el estado más
+  avanzado) al abrir Hiedra y al sincronizar, y la copia sobrante se quita también en tus otros móviles.
+- **La misma proporción de portada en toda la app (2:3)**, la de las carátulas verticales de SteamGridDB (600×900): la pantalla de inicio y
+  las listas usaban 3:4 y la ficha 2:3, por eso en el inicio se cortaban arriba y abajo.
+- El orden «Pasado» salía en todas las secciones: ahora se llama «Cuándo lo pasaste» y solo está en Pasados.
+- **Fechas y cifras como en las otras tres** (`Formato.kt`, con las mismas pruebas en las cuatro): «16 oct 2026» en fichas y textos, «16/10/2026» en las tablas de datos y siempre con punto de millar («4.010»). Los meses van escritos en la app (Android, según la versión, les ponía punto: «oct.»).
+- **«Jugar» es un botón grande** en la ficha, como «Seguir leyendo» en Marfil y «Seguir escribiendo» en Cobalto (la saga, al lado, en pequeño).
+- Ajustes: la pestaña «Servicios» se llama **«Cuenta»**, como en Marfil y Cobalto (Servicios sigue dentro, como sección).
+- «En Azabache» sin nota: una línea, «Sin valorar aún · Valorar en Azabache →» (antes eran dos que decían lo mismo).
+- Los contadores de las pestañas van en tinta (más oscura la de la pestaña elegida), no en rojo: el rojo queda para lo que se toca.
+- En las listas, la línea de debajo del título (plataforma, horas…) un punto más grande y más legible.
+- **Las portadas de letra, con las telas de Marfil**: la misma paleta en las cuatro apps (un título, siempre el mismo color) y la inicial en la letra de los títulos. Antes cada sistema tenía su color.
+- **La cabecera de la portada se pliega al bajar**: arriba solo se quedan el nombre y «Buscar · + Añadir»; el número, la fecha, las barras y el menú se van con la página.
+- Debajo de «Hiedra · hecho en casa», en gris, la versión instalada.
+
 ## 0.4.4
 
 - **Cambiar qué juego sigue un widget sin quitarlo**: déjalo pulsado en el escritorio y sale «Reconfigurar» (Android 12 o más, en los

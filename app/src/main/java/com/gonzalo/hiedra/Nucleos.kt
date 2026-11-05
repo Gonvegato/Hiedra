@@ -63,7 +63,7 @@ object Nucleos {
     /** «mGBA · 4 nov 2026 · 2,4 MB» */
     fun describir(n: Nucleo, i: Instalado?): String =
         if (i == null) "${n.nombre} · se descarga al jugar"
-        else listOf(n.nombre, if (i.fecha > 0) SimpleDateFormat("d MMM yyyy", Locale("es", "ES")).format(i.fecha) else null, megas(i.tamano)).filterNotNull().joinToString(" · ")
+        else listOf(n.nombre, if (i.fecha > 0) Formato.fecha(i.fecha) else null, megas(i.tamano)).filterNotNull().joinToString(" · ")
 
     fun megas(b: Long): String = String.format(Locale("es", "ES"), "%.1f MB", b / 1_048_576.0)
 

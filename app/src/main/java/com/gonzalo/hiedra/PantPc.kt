@@ -134,8 +134,8 @@ fun TarjetaPc(alIr: () -> Unit, alAbrir: (Juego) -> Unit, enPortada: Boolean = t
     Column(Modifier.fillMaxWidth().padding(bottom = if (enPortada) 18.dp else 0.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) { PuntoDirecto(); Spacer(Modifier.width(8.dp)); Antetitulo("En directo · ${pc.name}", color = Acento, conCuadro = false) }
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (juego != null) Box(Modifier.width(54.dp).aspectRatio(0.75f).clip(esquina(4.dp)).clickable { alAbrir(juego) }) { PortadaArco(juego, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 26) }
-            else PortadaPc(PcGame(g.key, g.name, g.cover, g.sg, false, 0, "", 0), Modifier.width(54.dp).aspectRatio(0.75f))
+            if (juego != null) Box(Modifier.width(54.dp).aspectRatio(PROPORCION_PORTADA).clip(esquina(4.dp)).clickable { alAbrir(juego) }) { PortadaArco(juego, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 26) }
+            else PortadaPc(PcGame(g.key, g.name, g.cover, g.sg, false, 0, "", 0), Modifier.width(54.dp).aspectRatio(PROPORCION_PORTADA))
             Column(Modifier.weight(1f).padding(start = 14.dp)) {
                 FitTitle(g.name, 26.sp, 28.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, letterSpacing = (-0.5).sp)
                 Text(("Jugando desde hace " + desdeHace(g.start) + (juego?.takeIf { it.msJugados >= 60_000 }?.let { " · ${tiempoDe(it.msJugados)} en total" } ?: "")).uppercase(),
@@ -310,7 +310,7 @@ fun PantPc(alVolver: () -> Unit, alAbrir: (Juego) -> Unit, alCaptura: (Shot) -> 
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 items(recientes, key = { it.key }) { g ->
                                     Column(Modifier.width(96.dp).clickable { hoja = dev to g }) {
-                                        PortadaPc(g, Modifier.fillMaxWidth().aspectRatio(0.75f))
+                                        PortadaPc(g, Modifier.fillMaxWidth().aspectRatio(PROPORCION_PORTADA))
                                         Text(g.name, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
                                     }
                                 }
@@ -329,7 +329,7 @@ fun PantPc(alVolver: () -> Unit, alAbrir: (Juego) -> Unit, alCaptura: (Shot) -> 
                             items(lib, key = { it.key }) { g ->
                                 val en = Biblioteca.porClave("pc:" + g.key) != null
                                 Column(Modifier.clickable { hoja = dev to g }) {
-                                    PortadaPc(g, Modifier.fillMaxWidth().aspectRatio(0.75f))
+                                    PortadaPc(g, Modifier.fillMaxWidth().aspectRatio(PROPORCION_PORTADA))
                                     Text(g.name, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
                                     Text(listOfNotNull(if (g.minutes > 0) tiempoDe(g.minutes * 60_000L) else null, if (en) "en Hiedra" else null).joinToString(" · ").uppercase(), color = if (en) Acento else Muted, fontFamily = Body, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, maxLines = 2)
                                 }

@@ -97,7 +97,7 @@ fun Loseta(j: Juego, ancho: Dp, alJugar: () -> Unit, alAbrir: () -> Unit, modifi
     Column(modifier.width(ancho).enfocado(src).conMando(src, alJugar, alAbrir).focusable(interactionSource = src)
         .combinedClickable(interactionSource = src, indication = null, onClick = alJugar, onLongClick = { hf.performHapticFeedback(HapticFeedbackType.LongPress); alAbrir() })
         .testTag("loseta-" + j.id).padding(bottom = 6.dp)) {
-        Box(Modifier.fillMaxWidth().aspectRatio(0.75f).clip(esquina(3.dp)).border(1.dp, Line, esquina(3.dp))) {
+        Box(Modifier.fillMaxWidth().aspectRatio(PROPORCION_PORTADA).clip(esquina(3.dp)).border(1.dp, Line, esquina(3.dp))) {
             PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = if (ancho >= 140.dp) 44 else 30)
         }
         if (kicker.isNotBlank()) Text(kicker.uppercase(), color = Acento, fontFamily = Body, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp, maxLines = 1, modifier = Modifier.padding(top = 6.dp))
@@ -112,10 +112,10 @@ private fun LosetaSaga(s: Saga, juegos: List<Juego>, ancho: Dp, alAbrir: () -> U
     val src = remember { MutableInteractionSource() }
     val v = juegos.take(3)
     Column(Modifier.width(ancho).enfocado(src).conMando(src, alAbrir, alAbrir).focusable(interactionSource = src).clickable(interactionSource = src, indication = null, onClick = alAbrir).padding(bottom = 6.dp)) {
-        Box(Modifier.fillMaxWidth().aspectRatio(0.75f)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(PROPORCION_PORTADA)) {
             v.asReversed().forEachIndexed { i, j ->
                 val k = v.size - 1 - i
-                Box(Modifier.padding(start = (ancho * 0.16f) * k, top = (ancho * 0.08f) * (v.size - 1 - k)).fillMaxWidth(if (v.size == 1) 1f else 0.7f).aspectRatio(0.75f).clip(esquina(3.dp)).border(1.dp, Line, esquina(3.dp))) {
+                Box(Modifier.padding(start = (ancho * 0.16f) * k, top = (ancho * 0.08f) * (v.size - 1 - k)).fillMaxWidth(if (v.size == 1) 1f else 0.7f).aspectRatio(PROPORCION_PORTADA).clip(esquina(3.dp)).border(1.dp, Line, esquina(3.dp))) {
                     PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 26)
                 }
             }
@@ -192,7 +192,10 @@ fun PantInicio(alAbrir: (Juego) -> Unit, alJugar: (Juego) -> Unit, alAnadir: (Ti
     )
 
     // La cabecera y el menú, exactamente como en la portada de Atrio (RevistaHome): mismos márgenes, mismo tamaño de cabecera, de filetes y de letra
-    Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).statusBarsPadding().padding(horizontal = 28.dp)) {
+    val desplazado = rememberScrollState()
+    val umbral = with(androidx.compose.ui.platform.LocalDensity.current) { 300.dp.toPx() }
+    Box(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().background(Paper).verticalScroll(desplazado).statusBarsPadding().padding(horizontal = 28.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             EnlaceRevista("Buscar") { alBuscar() }
             EnlaceRevista("+ Añadir", Modifier.padding(start = 14.dp), acento = true) { alAnadir(null) }
@@ -283,8 +286,13 @@ fun PantInicio(alAbrir: (Juego) -> Unit, alJugar: (Juego) -> Unit, alAnadir: (Ti
                 MagLink("Abrir Azabache", "Valora lo que acabas de jugar") { ctx.startActivity(atrio.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
             }
             Text("Hiedra · hecho en casa", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 14.dp))
+            // La versión instalada, debajo (para no tener que entrar en Ajustes a mirarla)
+            Text("versión $VERSION", color = Muted.copy(alpha = 0.7f), fontFamily = Body, fontSize = 10.sp, letterSpacing = 0.6.sp, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 2.dp))
             Spacer(Modifier.height(24.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()))
         }
+    }
+    // Al bajar, la cabecera se pliega: arriba solo quedan el nombre y lo de siempre (Buscar · + Añadir…)
+    BarraPlegada("Hiedra", desplazado.value > umbral) { EnlaceRevista("Buscar") { alBuscar() }; EnlaceRevista("+ Añadir", Modifier.padding(start = 14.dp), acento = true) { alAnadir(null) } }
     }
 }
 

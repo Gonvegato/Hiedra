@@ -103,10 +103,10 @@ object Datos {
     /** Las horas medias de RAWG (horas → minutos), o 0. */
     fun horasDeRawg(json: String): Int = JSONObject(json).optInt("playtime", 0) * 60
 
-    /** «2020-09-17» → «17/9/2020» (y si solo hay año, el año). */
+    /** «2020-09-17» → «17 sept 2020» (y si solo hay año, el año). */
     fun fechaBonita(iso: String): String {
         val p = iso.trim().split('-')
-        return when { p.size >= 3 && p[0].length == 4 -> "${p[2].trimStart('0')}/${p[1].trimStart('0')}/${p[0]}"; p.isNotEmpty() && p[0].length == 4 -> p[0]; else -> iso.trim() }
+        return when { p.size >= 3 && p[0].length == 4 -> runCatching { Formato.fecha(java.time.LocalDate.of(p[0].toInt(), p[1].toInt(), p[2].take(2).toInt())) }.getOrDefault(iso.trim()); p.isNotEmpty() && p[0].length == 4 -> p[0]; else -> iso.trim() }
     }
 
     class Duraciones(val historia: Int, val extras: Int, val completo: Int, val de: String)

@@ -57,7 +57,7 @@ fun ElegirJuegoWidget(alElegir: (String?) -> Unit) {
             if (lista.isEmpty()) item { Text("Todavía no hay juegos en Hiedra.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 17.sp, modifier = Modifier.padding(top = 20.dp)) }
             items(lista, key = { it.id }) { j ->
                 Row(Modifier.fillMaxWidth().clickable { alElegir(j.id) }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.width(40.dp).aspectRatio(0.75f).clip(esquina(3.dp))) { PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 18) }
+                    Box(Modifier.width(40.dp).aspectRatio(PROPORCION_PORTADA).clip(esquina(3.dp))) { PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 18) }
                     Column(Modifier.weight(1f).padding(start = 12.dp)) {
                         Text(j.titulo, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, maxLines = 2)
                         Text(metaJuego(j, conEstado = true).uppercase(), color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)

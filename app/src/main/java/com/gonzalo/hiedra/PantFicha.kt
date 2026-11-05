@@ -1,5 +1,7 @@
 package com.gonzalo.hiedra
 
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.PlayArrow
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -128,8 +130,8 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
         Spacer(Modifier.height(14.dp))
 
         // La portada (un toque la cambia) y tus horas (como la ficha de Marfil: la portada y por dónde vas)
-        Row(Modifier.fillMaxWidth().height(220.dp)) {
-            Box(Modifier.width(150.dp).height(220.dp).clip(esquina(3.dp)).border(1.dp, Line, esquina(3.dp)).clickable { eligePortada = true }.testTag("portada")) {
+        Row(Modifier.fillMaxWidth().height(225.dp)) {
+            Box(Modifier.width(150.dp).height(225.dp).clip(esquina(3.dp)).border(1.dp, Line, esquina(3.dp)).clickable { eligePortada = true }.testTag("portada")) {
                 PortadaArco(j, Modifier.matchParentSize(), titulo = false, letra = true, relleno = true, tamLetra = 64)
             }
             Column(Modifier.weight(1f).padding(start = 18.dp).fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
@@ -157,9 +159,10 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
 
         // Las acciones: jugar (o vincular) y la saga
         Filete(1.dp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (j.sinLanzador) EnlaceRevista("Añadir cómo se abre →", acento = true) { alVincular(j) }
-            else EnlaceRevista(if (j.abrible) "Jugar →" else if (j.enPc) "Jugar en el PC / streaming →" else "Jugar →", acento = true) { alJugar(j) }
+        // La acción de siempre, como en Marfil y Cobalto: un botón grande (jugar); la saga, al lado, en pequeño
+        Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (j.sinLanzador) AccionGrande(androidx.compose.material.icons.Icons.Rounded.Add, "Añadir cómo se abre", Modifier.weight(1f)) { alVincular(j) }
+            else AccionGrande(androidx.compose.material.icons.Icons.Rounded.PlayArrow, if (j.enPc && !j.abrible) "Jugar en el PC" else "Jugar", Modifier.weight(1f)) { alJugar(j) }
             EnlaceRevista(if (miSaga != null) "Saga: ${miSaga.nombre} →" else "Saga →", acento = miSaga != null) { saga = true }
         }
         Filete(1.dp)
@@ -196,8 +199,11 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
         val nota = NotaAzabache.de(notas, j)
         Casilla("En Azabache", if (NotaAzabache.instalado(ctx)) "Abrir" to { NotaAzabache.abrir(ctx, nota) } else null) {
             if (nota == null) {
-                Text("Sin valorar en Azabache.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp)
-                Text("La valoración se hace allí; aquí solo se ve.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+                // Una línea: lo que hay y qué hacer (antes eran dos que decían lo mismo)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (NotaAzabache.instalado(ctx)) "Sin valorar aún · " else "Sin valorar aún", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp)
+                    if (NotaAzabache.instalado(ctx)) EnlaceRevista("Valorar en Azabache →", acento = true) { NotaAzabache.abrir(ctx, null) }
+                }
             } else {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(nota.general.toString(), color = Charcoal, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = 62.sp, letterSpacing = (-2).sp, maxLines = 1, softWrap = false)
@@ -240,7 +246,7 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
             val pie = when {
                 buscandoDatos -> "Buscando los datos del juego…"
                 datos == null -> if (Datos.activo) "" else "Sin datos de fuera."
-                datos.nada -> if (Servicios.claves(ctx).rawg.isBlank()) "No está en la tienda de Steam. Con una clave de RAWG (Ajustes → Servicios, o en Atrio) se buscan también los juegos de consola." else "No he encontrado este juego en Steam ni en RAWG. Si su nombre aquí no es el oficial, cámbialo en «Editar» y busca de nuevo."
+                datos.nada -> if (Servicios.claves(ctx).rawg.isBlank()) "No está en la tienda de Steam. Con una clave de RAWG (Ajustes → Cuenta → Servicios, o en Atrio) se buscan también los juegos de consola." else "No he encontrado este juego en Steam ni en RAWG. Si su nombre aquí no es el oficial, cámbialo en «Editar» y busca de nuevo."
                 else -> ""
             }
             if (pie.isNotBlank()) Text(pie, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.padding(top = 6.dp))
@@ -457,7 +463,7 @@ fun nombreFuente(k: String): String = when {
     else -> k
 }
 
-private fun fechaCorta(t: Long) = java.text.SimpleDateFormat("d/M/yyyy", java.util.Locale("es", "ES")).format(java.util.Date(t))
+private fun fechaCorta(t: Long) = Formato.fecha(t)
 fun notaTexto(n: Float) = if (n <= 0f) "—" else if (n % 1f == 0f) n.toInt().toString() else String.format(java.util.Locale("es", "ES"), "%.1f", n)
 
 /** Una casilla fija de la ficha: su antetítulo (con una acción a la derecha, si la hay) y lo que pinta, entre filetes. */
