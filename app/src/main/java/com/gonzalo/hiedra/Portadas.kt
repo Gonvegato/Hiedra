@@ -114,6 +114,7 @@ fun PortadaArco(
     val (a, b) = remember(j.id, j.titulo, j.sistema) { tonosDe(j) }
     val forma = if (relleno) androidx.compose.ui.graphics.RectangleShape else arco()
     var conImagen by remember(j.id, j.portada) { mutableStateOf(false) }
+    val hayPortada = remember(j.portada) { j.portada.isNotBlank() && File(j.portada).exists() }
     val borde = Skin.forma
     Box(
         modifier.let { if (relleno) it else it.aspectRatio(0.75f) }
@@ -127,8 +128,9 @@ fun PortadaArco(
         )
         // La imagen, según de dónde sea el juego
         when {
-            j.portada.isNotBlank() && j.encuadrada && File(j.portada).exists() -> { ImagenEncuadrada(File(j.portada), j.zoom, j.ox, j.oy, Modifier.fillMaxSize()); LaunchedEffect(j.portada) { conImagen = true } }
-            j.portada.isNotBlank() -> ImagenEnCadena(listOf(File(j.portada)), Modifier.fillMaxSize(), ContentScale.Crop) { conImagen = true }
+            // (si el archivo de tu portada ya no está, se enseña la siguiente: la de internet o la automática)
+            hayPortada && j.encuadrada -> { ImagenEncuadrada(File(j.portada), j.zoom, j.ox, j.oy, Modifier.fillMaxSize()); LaunchedEffect(j.portada) { conImagen = true } }
+            hayPortada -> ImagenEnCadena(listOf(File(j.portada)), Modifier.fillMaxSize(), ContentScale.Crop) { conImagen = true }
             j.portadaUrl.isNotBlank() -> ImagenEnCadena(listOf(j.portadaUrl), Modifier.fillMaxSize(), ContentScale.Crop) { conImagen = true }
             j.rom != null && Ajustes.portadasLibretro -> ImagenEnCadena(urlsLibretro(j), Modifier.fillMaxSize(), ContentScale.Crop) { conImagen = true }
             j.app != null -> rememberIconoApp(j.paquete)?.let {

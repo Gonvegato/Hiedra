@@ -120,7 +120,7 @@ object Mezcla {
     private fun unir(l: Juego, rs: List<Pair<String, Juego>>): Juego {
         val g = rs.maxByOrNull { it.second.mod }!!.second
         val base = if (g.mod > l.mod) l.copy(titulo = g.titulo.ifBlank { l.titulo }, plataforma = g.plataforma, estado = g.estado, favorito = g.favorito, finalizado = g.finalizado,
-            portadaUrl = g.portadaUrl, zoom = g.zoom, ox = g.ox, oy = g.oy, durHistoria = g.durHistoria, durExtras = g.durExtras, durCompleto = g.durCompleto,
+            portadaUrl = g.portadaUrl.ifBlank { l.portadaUrl }, zoom = g.zoom, ox = g.ox, oy = g.oy, durHistoria = g.durHistoria, durExtras = g.durExtras, durCompleto = g.durCompleto,
             otrasClaves = g.otrasClaves, lanzadores = g.lanzadores, mod = g.mod) else l
         val ajenas = l.ajenas + rs.associate { it.first to it.second.propias }
         val anadidos = (listOf(l.anadido) + rs.map { it.second.anadido }).filter { it > 0 }

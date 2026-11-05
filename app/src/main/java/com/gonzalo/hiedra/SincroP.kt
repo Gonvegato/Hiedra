@@ -75,7 +75,8 @@ object SincroP {
             val blob = Mezcla.aJson(Mezcla.aBlob(Cuenta.dispositivo, Biblioteca.juegos.toList(), HashMap(Biblioteca.borrados), if (Skin.ajustesAt > 0L) Skin.ajustesJson().toString() else "", Sagas.lista.toList(), HashMap(Sagas.borradas), if (Inicio.config.mod > 0L) Inicio.config.aJson().toString() else ""))
             val hash = blob.hashCode().toString() + ":" + blob.length
             val p = prefs(c)
-            if (!forzar && p.getString("hash", "") == hash) return@withLock true
+            // (las portadas se miran siempre: elegir una no cambia la biblioteca que se sube)
+            if (!forzar && p.getString("hash", "") == hash) { runCatching { portadas(c) }; return@withLock true }
             val nodo = JSONObject().put("name", Cuenta.nombreDispositivo).put("device", "hiedra").put("updated", JSONObject().put(".sv", "timestamp")).put("data", blob)
             Cuenta.db("PUT", "${Cuenta.raiz}/dev/${Cuenta.dispositivo}", nodo.toString(), "print=silent")
             val ts = Cuenta.db("GET", "${Cuenta.raiz}/dev/${Cuenta.dispositivo}/updated", null)?.toLongOrNull() ?: throw Cuenta.Fail("Firebase no ha guardado la copia.")
@@ -158,6 +159,8 @@ object SincroP {
                 nuevos.map { it.inicio }.filter { it.isNotBlank() }.forEach { if (Inicio.aplicarRemoto(it)) cambio = true }
             }
             guardaVistos(c, vistosNuevos)
+            // Las portadas: las que pusiste o quitaste en otro móvil llegan aquí (y las de aquí suben), también al abrir Hiedra
+            if (KDrive.on(c) && runCatching { NubeP.portadas(c) }.getOrDefault(false)) cambio = true
             bien(c)
             cambio
         } catch (e: Exception) { mal(c, e); false }

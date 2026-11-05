@@ -269,7 +269,7 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
                 Filete(1.dp, Line)
                 MagLink("Elegir de la galería") { eligePortada = false; cambiarPortada.launch("image/*") }
                 if (j.portada.isNotBlank() && File(j.portada).exists()) { Filete(1.dp, Line); MagLink("Encuadrar", "Mueve y amplía la imagen entera dentro del hueco") { eligePortada = false; encuadre = true } }
-                if (j.portada.isNotBlank()) { Filete(1.dp, Line); MagLink("Usar la portada automática") { eligePortada = false; Biblioteca.poner(j.copy(portada = "", zoom = 1f, ox = 0f, oy = 0f)) } }
+                if (j.portada.isNotBlank()) { Filete(1.dp, Line); MagLink("Usar la portada automática") { eligePortada = false; Biblioteca.poner(j.copy(portada = "", zoom = 1f, ox = 0f, oy = 0f)); NubeP.portadaQuitada(ctx, j) } }
             }
         },
         confirmButton = {}, dismissButton = { TextButton({ eligePortada = false }) { Text("CERRAR", color = Charcoal, fontFamily = Body, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp) } }

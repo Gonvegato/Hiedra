@@ -245,37 +245,99 @@ object NubeP {
 
     // ---------------------------------------------------------------- portadas propias
 
-    private val hashes = HashMap<String, String>()
-    private fun hashPortada(f: File): String = hashes.getOrPut("${f.path}|${f.length()}|${f.lastModified()}") { hashDe(f.inputStream()) }
+    /** Qué hacer con la portada que elegiste para un juego, comparando este móvil, tu kDrive y cómo estaba la última vez que se sincronizó. */
+    enum class PasoPortada { NADA, ANOTAR, SUBIR, BAJAR, REENLAZAR, QUITAR_AQUI, QUITAR_EN_NUBE }
 
-    /** Portadas elegidas por ti: las de este móvil se suben; las que otro de tus móviles subió y aquí faltan, se bajan. */
+    /**
+     * La regla (pura, se prueba). [local]/[nube]: el hash de la portada aquí y en tu kDrive (null si no hay); [ultimo]: el de la última vez
+     * que estuvieron de acuerdo; [tLocal]/[tNube]: cuándo se puso cada una. Manda el cambio más reciente, venga de donde venga:
+     *  - la pusiste o la cambiaste aquí → se sube; la cambiaste en otro móvil → se baja (si las dos cambiaron, la más nueva);
+     *  - la quitaste aquí («Usar la portada automática») → se quita de tu kDrive; la quitaste en otro → se quita aquí;
+     *  - aquí no está pero es la misma que ya tenías → se vuelve a poner (del archivo que sigue en el móvil o, si no, de tu kDrive).
+     */
+    fun decidirPortada(local: String?, tLocal: Long, ultimo: String, nube: String?, tNube: Long, quitadaEnNube: Boolean, quitadaAqui: Boolean): PasoPortada = when {
+        local == null && quitadaAqui -> if (nube != null) PasoPortada.QUITAR_EN_NUBE else PasoPortada.NADA
+        local != null && local == nube -> if (ultimo != local) PasoPortada.ANOTAR else PasoPortada.NADA
+        local != null && local != ultimo && nube != null && nube != ultimo -> if (tLocal >= tNube) PasoPortada.SUBIR else PasoPortada.BAJAR
+        local != null && local != ultimo -> PasoPortada.SUBIR
+        nube != null && nube != ultimo -> PasoPortada.BAJAR
+        nube != null && local == null -> PasoPortada.REENLAZAR
+        nube == null && local != null && quitadaEnNube && local == ultimo -> PasoPortada.QUITAR_AQUI
+        nube == null && local != null && !quitadaEnNube -> PasoPortada.SUBIR
+        else -> PasoPortada.NADA
+    }
+
+    /** Has vuelto a la portada automática: se quitará también de tu kDrive y de tus otros móviles. */
+    fun portadaQuitada(c: Context, j: Juego) {
+        prefs(c).edit().putBoolean("q:${kid(j)}", true).apply()
+        val app = c.applicationContext
+        if (Cuenta.vinculada && KDrive.on(app)) kotlin.concurrent.thread { runCatching { portadas(app) } }
+    }
+    private fun quitadaAqui(c: Context, kid: String) = prefs(c).getBoolean("q:$kid", false)
+
+    private val hashes = HashMap<String, String>()
+    private fun hashPortada(f: File): String = synchronized(hashes) { hashes.getOrPut("${f.path}|${f.length()}|${f.lastModified()}") { hashDe(f.inputStream()) } }
+    private val sincPortadas = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    /**
+     * Las portadas que eliges tú (galería, internet, SteamGridDB…) en todos tus móviles, como los libros en Atrio: el archivo va a tu kDrive
+     * y el índice a tu cuenta (`nube/portadas/<juego>/f/img`; `nube/portadas/<juego>/x` = cuándo la quitaste). Se mira cada vez que se
+     * sincroniza (al abrir Hiedra, al llegar cambios de otro móvil y al cambiar algo aquí). Bloqueante (red). Devuelve si ha cambiado algo aquí.
+     */
     fun portadas(c: Context): Boolean {
-        if (!Cuenta.vinculada || !KDrive.on(c)) return false
-        val propias = File(c.filesDir, "portadas").path
-        var cambio = false
-        val remoto = Cuenta.db("GET", "${Cuenta.raiz}/nube/portadas", null)?.let { JSONObject(it) }
-        for (j in Biblioteca.juegos.toList()) {
-            val kid = kid(j)
-            val f = j.portada.takeIf { it.startsWith(propias) }?.let { File(it) }?.takeIf { it.exists() }
-            val cloud = remoto?.optJSONObject(kid)?.optJSONObject("f")?.let { deJson(it)["img"] }
-            if (f != null) {
-                val h = hashPortada(f)
-                if (h == ultimo(c, kid, "img") || cloud?.h == h) { anota(c, kid, "img", h); continue }
-                val id = KDrive.upload(c, "Hiedra/Portadas", "$kid.jpg", f.length()) { f.inputStream() }
-                escribe("portadas", kid, "img", "$kid.jpg", id, h, f.length())
-                anota(c, kid, "img", h)
-            } else if (cloud != null && cloud.h != ultimo(c, kid, "img") && (j.portada.isBlank() || !File(j.portada).exists())) {
-                val dir = File(c.filesDir, "portadas").apply { mkdirs() }
-                val dest = File(dir, "${j.id}-${System.currentTimeMillis()}.jpg")
+        if (!Cuenta.vinculada || !KDrive.on(c) || !sincPortadas.compareAndSet(false, true)) return false
+        try {
+            val dir = File(c.filesDir, "portadas").apply { mkdirs() }
+            val propias = dir.path
+            var cambio = false
+            val remoto = Cuenta.db("GET", "${Cuenta.raiz}/nube/portadas", null)?.let { runCatching { JSONObject(it) }.getOrNull() }
+            val archivos by lazy { dir.listFiles()?.filter { it.isFile && it.length() > 0 }.orEmpty() }
+            for (j0 in Biblioteca.juegos.toList()) {
+                val j = Biblioteca.por(j0.id) ?: continue
+                val kid = kid(j)
+                val f = j.portada.takeIf { it.startsWith(propias) }?.let { File(it) }?.takeIf { it.exists() && it.length() > 0 }
+                val nodo = remoto?.optJSONObject(kid)
+                val cloud = nodo?.optJSONObject("f")?.let { deJson(it)["img"] }?.takeIf { it.id > 0 && it.h.isNotBlank() }
+                val lh = f?.let { hashPortada(it) }
+                val paso = decidirPortada(lh, f?.lastModified() ?: 0L, ultimo(c, kid, "img"), cloud?.h, cloud?.t ?: 0L, (nodo?.optLong("x", 0L) ?: 0L) > 0L, quitadaAqui(c, kid))
+                fun bajar(ficha: Ficha) {
+                    val dest = File(dir, "${j.id}-${System.currentTimeMillis()}.jpg")
+                    try {
+                        KDrive.download(c, ficha.id, dest)
+                        if (hashPortada(dest) != ficha.h) { dest.delete(); return }
+                        anota(c, kid, "img", ficha.h)
+                        Biblioteca.por(j.id)?.let { Biblioteca.poner(it.copy(portada = dest.absolutePath)); cambio = true }
+                    } catch (e: Exception) { dest.delete() }
+                }
                 try {
-                    KDrive.download(c, cloud.id, dest)
-                    if (hashPortada(dest) != cloud.h) { dest.delete(); continue }
-                    anota(c, kid, "img", cloud.h)
-                    Biblioteca.por(j.id)?.let { Biblioteca.poner(it.copy(portada = dest.absolutePath)); cambio = true }
-                } catch (e: Exception) { dest.delete() }
+                    when (paso) {
+                        PasoPortada.NADA -> {}
+                        PasoPortada.ANOTAR -> anota(c, kid, "img", lh!!)
+                        PasoPortada.SUBIR -> {
+                            val id = KDrive.upload(c, "Hiedra/Portadas", "$kid.jpg", f!!.length()) { f.inputStream() }
+                            escribe("portadas", kid, "img", "$kid.jpg", id, lh!!, f.length())
+                            if (nodo?.has("x") == true) Cuenta.db("DELETE", "${Cuenta.raiz}/nube/portadas/$kid/x", null)
+                            anota(c, kid, "img", lh); prefs(c).edit().remove("q:$kid").apply()
+                        }
+                        PasoPortada.BAJAR -> bajar(cloud!!)
+                        PasoPortada.REENLAZAR -> {
+                            // La misma que ya tenías: si el archivo sigue en el móvil, se vuelve a poner sin bajar nada
+                            val aqui = archivos.firstOrNull { runCatching { hashPortada(it) }.getOrNull() == cloud!!.h }
+                            if (aqui != null) { Biblioteca.poner(j.copy(portada = aqui.absolutePath)); cambio = true } else bajar(cloud!!)
+                        }
+                        PasoPortada.QUITAR_EN_NUBE -> {
+                            Cuenta.db("DELETE", "${Cuenta.raiz}/nube/portadas/$kid/f/img", null)
+                            Cuenta.db("PUT", "${Cuenta.raiz}/nube/portadas/$kid/x", JSONObject().put(".sv", "timestamp").toString(), "print=silent")
+                            anota(c, kid, "img", ""); prefs(c).edit().remove("q:$kid").apply()
+                        }
+                        PasoPortada.QUITAR_AQUI -> {
+                            Biblioteca.poner(j.copy(portada = "", zoom = 1f, ox = 0f, oy = 0f)); anota(c, kid, "img", ""); cambio = true
+                        }
+                    }
+                } catch (e: Exception) { /* esta portada se reintenta la próxima vez */ }
             }
-        }
-        return cambio
+            return cambio
+        } finally { sincPortadas.set(false) }
     }
 }
 

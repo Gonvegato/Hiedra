@@ -15,6 +15,17 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.4.3
+
+- **Las portadas que eliges, de verdad en todos tus móviles** (como los libros en Atrio). Antes solo se miraban cuando cambiaba la
+  biblioteca de este móvil (y elegir una portada no contaba como cambio), un móvil que ya tenía una no recibía la nueva, y quitar una no
+  llegaba a los demás. Ahora se miran cada vez que se sincroniza (al abrir Hiedra, al llegar algo de otro móvil y al cambiar algo aquí) y
+  manda el cambio más reciente: la pones o la cambias en un móvil y llega a los demás; vuelves a la automática y se quita en todos.
+- **Las que se habían «perdido» vuelven solas**: si el juego dejó de apuntar a su portada pero esa portada sigue en tu kDrive, se vuelve a
+  poner (del archivo que aún está en el móvil, sin bajar nada, o bajándola). Si el archivo de una portada ya no está, se ve la de internet
+  o la automática en vez de un hueco vacío.
+- La portada de internet (SteamGridDB…) de un juego ya no se borra al mezclar con un móvil que no la tenía.
+
 ## 0.4.2
 
 - Arreglo: al mezclar tu biblioteca con la de tus otros móviles se podía perder la portada que acababas de poner (o que se acababa de
