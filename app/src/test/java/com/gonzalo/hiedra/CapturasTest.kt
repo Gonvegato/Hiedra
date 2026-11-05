@@ -45,9 +45,12 @@ class CapturasTest {
         Datos.activo = false; Datos.cargar(ctx)
         Datos.poner("r1", DatosJuego("RAWG", "1/2/2005", listOf("Game Freak"), listOf("Nintendo"), listOf("RPG", "Aventura"), "La tercera versión de Hoenn: Rayquaza, el Frente de Batalla y los dos equipos a la vez.", 76, "IGDB · Pokémon Emerald · 310 jugadores"))
         val ahora = System.currentTimeMillis()
+        // Unos días de juego para que se vean las barras de la semana en la portada (solo en el primero)
+        val hoyD = java.time.LocalDate.now()
+        val diasJuego = listOf(0 to 52, 1 to 35, 2 to 0, 3 to 70, 4 to 25, 5 to 41, 6 to 18).filter { it.second > 0 }.associate { (atras, min) -> hoyD.minusDays(atras.toLong()).toString() to min * 60_000L }
         fun rom(n: String, s: String, k: Int, fav: Boolean = false, jug: Long = 0, ms: Long = 0, veces: Int = 0) {
             val l = Lanzador.rom(s, n); Archivos.poner(l.clave, "content://x/$k", "")
-            Biblioteca.juegos.add(Juego("r$k", n, lanzadores = listOf(l), favorito = fav, anadido = ahora - k * 1000L, ultima = jug, propias = Horas(ms, veces)))
+            Biblioteca.juegos.add(Juego("r$k", n, lanzadores = listOf(l), favorito = fav, anadido = ahora - k * 1000L, ultima = jug, propias = Horas(ms, veces, if (k == 1) diasJuego else emptyMap())))
         }
         rom("Pokémon Esmeralda", "gba", 1, fav = true, jug = ahora - 3600_000, ms = 3 * 3600_000L + 1_200_000, veces = 7)
         rom("Metroid Fusion", "gba", 2); rom("Advance Wars", "gba", 3, fav = true); rom("The Minish Cap", "gba", 4)
