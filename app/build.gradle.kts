@@ -11,8 +11,11 @@ android {
         applicationId = "com.gonzalo.hiedra"
         minSdk = 29
         targetSdk = 34
-        versionCode = 19
-        versionName = "0.3.14"
+        versionCode = 20
+        versionName = "0.4.0"
+        // El jugador interno (LibretroDroid y los núcleos del buildbot de libretro) solo se usa en arm64: así el APK no lleva
+        // las bibliotecas nativas de otras arquitecturas que ningún móvil actual necesita.
+        ndk { abiFilters += "arm64-v8a" }
     }
     // Firma fija: cada versión nueva se instala encima de la anterior sin borrar tus juegos.
     signingConfigs {
@@ -61,6 +64,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("androidx.lifecycle:lifecycle-process:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    // El jugador interno: núcleos libretro con LibretroDroid y los mandos táctiles de RadialGamePad (GPL-3.0, ver LICENSE)
+    implementation("com.github.swordfish90:libretrodroid:0.14.0")
+    implementation("com.github.swordfish90:radialgamepad:2.0.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
     testImplementation("org.robolectric:robolectric:4.13")

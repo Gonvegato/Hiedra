@@ -30,7 +30,8 @@ enlaza buscando esa clave en `k` de los juegos; a partir de ahí, por `id`.
 | `stamps/<dispositivo>` | Hora de la última subida de ese dispositivo (servidor). | cada Hiedra |
 | `tiempo/<id>/<fuente>` | `{t, k, m, p, total, days, fin}`: título, claves, menú (`pc`/`emulacion`/`android`/`web`), plataforma, ms jugados, `days` (`"AAAA-MM-DD"` → ms) y cuándo lo pasó. `<fuente>` es un dispositivo Hiedra (sus propias horas), `steam` (las de la API de Steam), `pc:<pc>` (las partidas del PC vistas desde el móvil) o `carmesi:<dispositivo>` (lo jugado en Carmesí en ese dispositivo, importado una vez). **Ligero**: es lo que debe leer un Diario. Cada fuente es un solo nodo: no hay nada repetido. Las horas totales del PC NO van aquí: están en `suite/lib/<PC>` (`m`, minutos), que ya publica Atrio del PC. | cada Hiedra (su fuente), cualquier Hiedra (`steam`, `pc:<pc>`) |
 | `nube/portadas/<id>` | La portada que pusiste tú, en kDrive (`f.img`: id, nombre, hash, tamaño). | cualquier Hiedra |
-| `nube/roms/<id>`, `nube/guardados/<id>` | La ROM y las partidas guardadas en kDrive. | cualquier Hiedra |
+| `nube/roms/<id>`, `nube/saves/<id>` | La ROM y las partidas guardadas en kDrive. | cualquier Hiedra |
+| `nube/states/<id>/f/<hueco>` | Los estados del jugador interno (el guardado rápido; `<hueco>` = `auto`, `1`, `2`, `3`), en kDrive (`Hiedra/Estados/<sistema>/<id>/<hueco>.state`): `n` nombre, `id` del archivo en kDrive, `h` hash, `s` tamaño, `dev`/`dn` dispositivo y su nombre, `nucleo` y `version` del núcleo (un estado solo lo entiende el mismo núcleo), `t` hora del servidor. **Solo para Hiedra**: no sirve a otros emuladores. La partida del cartucho (SRAM) va en `nube/saves`, como las de los demás emuladores. | cualquier Hiedra |
 
 ## Cómo leer el tiempo para un Diario
 

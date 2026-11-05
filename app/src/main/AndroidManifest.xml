@@ -182,6 +182,10 @@
         <activity android:name=".LanzarActivity" android:exported="false" android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true" android:taskAffinity="" />
         <!-- Juegos de navegador a pantalla completa -->
+        <!-- El jugador interno (núcleos libretro). No se recrea al girar el móvil ni al conectar un mando: la vista de OpenGL del juego se perdería. -->
+        <activity android:name=".JuegoActivity" android:exported="false" android:theme="@style/HiedraWeb" android:launchMode="singleTask"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|uiMode|density|fontScale|locale|layoutDirection|navigation|touchscreen|colorMode|mcc|mnc" />
         <activity android:name=".WebJuegoActivity" android:exported="false" android:theme="@style/HiedraWeb"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|uiMode|density|fontScale|locale|layoutDirection|navigation|touchscreen|colorMode|mcc|mnc" />
         <!-- Widgets de la pantalla de inicio (los de Atrio, con juegos) -->

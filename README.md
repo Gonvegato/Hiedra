@@ -15,6 +15,45 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.4.0 — el jugador interno (Fase A: Game Boy Advance)
+
+Hiedra juega ella misma a los juegos de **GBA**, sin otra app: con el núcleo **mGBA** de libretro (vía LibretroDroid), y con lo que un
+emulador de fuera no puede darle: sabe cuándo acabas, guarda donde estás al salir y lo sube a tu nube para seguir en otro móvil.
+
+- **Hiedra es un emulador más** en la lista del sistema («Hiedra», el primero) y el automático para GBA. Si prefieres otro, se elige como
+  siempre en la ficha o en Sistemas. En la ficha, en «Emulador», está el núcleo: cuál es, de cuándo, cuánto ocupa, y **Descargar ahora**,
+  **Actualizar** (avisa de que los estados de la versión vieja pueden no cargar; la anterior se guarda) y **Quitar**. Si no lo tienes, se
+  baja solo la primera vez que juegas (del buildbot de libretro, unos 400 KB).
+- **Guardado rápido a la nube**: al salir del juego por cualquier camino (el menú, atrás, el botón de inicio, otra app encima) se hace un
+  estado automático, se guarda la partida del cartucho y se sube a tu kDrive en segundo plano (con reintentos si no hay red). Mientras
+  juegas, también cada pocos minutos. Al volver a jugar, aquí o en otro móvil, se carga el más reciente; si el de la nube lo hizo otra
+  versión del núcleo, te pregunta. Además, tres huecos a mano en el menú (con miniatura).
+- **La partida del cartucho** (.sav) se deja en la carpeta de guardados del sistema, con el nombre de la ROM: la misma que ya sincroniza
+  Hiedra y que entienden los demás emuladores.
+- **Avance rápido**: ×2, ×3, ×4 u ×8, mientras lo pulsas o con un toque para encender y otro para apagar, con o sin sonido. En el mando,
+  R2 o el gatillo derecho (GBA no los usa); en la pantalla, el botón ▶▶. Arriba se ve a cuánto va y, si el móvil no llega, la velocidad
+  real («▶▶ ×8 · real ×5,3»).
+- **Controles táctiles** (RadialGamePad, el de Lemuroid): cruceta con diagonales, A y B, L y R, Start y Select. Opacidad, tamaño y vibración.
+- **Mandos físicos**: en cuanto conectas uno (Bluetooth o USB), los controles táctiles se ocultan; si tocas la pantalla vuelven hasta que
+  uses el mando. Los botones van **por posición** (el de la derecha es el A, como en la consola; lo que hacen RetroArch y Lemuroid) o, si
+  lo prefieres, por la letra pintada. Cruceta o stick izquierdo, gatillos analógicos como botones. Cada mando guarda su configuración: en
+  «Cambiar botones del mando» eliges una función y pulsas el botón. El botón central del mando (Home/Guide) o Select + Start abren el
+  menú; con el mando se navega por él.
+- **Menú en pausa**: continuar, guardar y cargar estado, avance rápido, mando y controles, imagen (Nítido, Suave, LCD, CRT; apaisada,
+  vertical o la del móvil), captura (a Imágenes/Hiedra), reiniciar y salir.
+- **Diagnóstico de mando**: el nombre, los ids y las últimas teclas y ejes que manda tu mando, para copiarlos y pegarlos si algo no va.
+- Licencia: LibretroDroid y RadialGamePad son GPL-3.0, así que **Hiedra pasa a ser GPL-3.0** (archivo `LICENSE`). mGBA es MPL-2.0.
+
+Lo que falta y lo que no se ha podido probar (honesto):
+
+- **No se ha probado en un móvil de verdad**: ni el núcleo corriendo, ni el rendimiento, ni tus mandos (el GameSir que se divide y el
+  8BitDo). Las pruebas del ordenador comprueban las reglas (mandos, avance rápido, qué estado se carga) y las capturas enseñan el táctil
+  y el menú, pero el juego en sí (código nativo de ARM) no corre en el ordenador. Si un mando hace algo raro, el diagnóstico lo dice.
+- La velocidad real del avance rápido se mide contando imágenes por segundo: es una aproximación.
+- Solo GBA y solo móviles de 64 bits (arm64). Los demás sistemas 2D llegan en la Fase B; PSX, N64, DS, PSP y arcade, en la C.
+- Sin pantalla de BIOS (GBA no la necesita), sin ajustes del núcleo y sin segundo jugador.
+- Un estado solo lo entiende el mismo núcleo: no sirve para seguir en otro emulador (la partida del cartucho, sí).
+
 ## 0.3.14
 
 - En las filas de datos (etiqueta · puntos · cifra), si no cabe todo en una línea, la etiqueta va entera arriba y la cifra debajo, en vez

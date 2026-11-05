@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.3.14"
+const val VERSION = "0.4.0"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -140,7 +140,7 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
         Filete(3.dp)
         Spacer(Modifier.height(10.dp))
         Etiqueta("Hiedra $VERSION")
-        Text("Hiedra es hermana de Azabache, Marfil y Cobalto. Los comandos para abrir emuladores salen de ES-DE Frontend (licencia MIT, © Northwestern Software AB, Leon Styhre y Alec Lofquist). Las portadas, de libretro.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
+        Text("Hiedra es hermana de Azabache, Marfil y Cobalto. Los comandos para abrir emuladores salen de ES-DE Frontend (licencia MIT, © Northwestern Software AB, Leon Styhre y Alec Lofquist). Las portadas, de libretro. El jugador interno usa LibretroDroid y RadialGamePad (GPL-3.0, Filippo Scognamiglio) y los núcleos de libretro (mGBA, MPL-2.0), que se descargan del buildbot de libretro; por eso Hiedra es software libre (GPL-3.0).", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         Spacer(Modifier.height(30.dp))
     }
 }

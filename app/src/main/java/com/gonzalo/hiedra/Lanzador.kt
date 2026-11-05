@@ -32,7 +32,15 @@ object Lanzar {
 
     fun evaluar(c: Context, sistema: String, r: RomRef): List<Eleccion> {
         val env = entorno(c)
-        return comandosDe(sistema).map { (l, t) -> Eleccion(l, t, Comando.resolver(t, r, env)) }
+        return listOfNotNull(interno(c, sistema)) + comandosDe(sistema).map { (l, t) -> Eleccion(l, t, Comando.resolver(t, r, env)) }
+    }
+
+    /** El jugador interno: un emulador más en la lista («Hiedra»), para los sistemas con núcleo. Siempre se puede (el núcleo se baja al jugar). */
+    const val HIEDRA = "Hiedra"
+    const val PLANTILLA_HIEDRA = "hiedra:interno"
+    fun esInterno(e: Eleccion?) = e?.plantilla == PLANTILLA_HIEDRA
+    private fun interno(c: Context, sistema: String): Eleccion? = Nucleos.para(sistema)?.let {
+        Eleccion(HIEDRA, PLANTILLA_HIEDRA, Resultado.Ok(Especificacion(c.packageName, null, null, null, null, emptyList(), emptyList(), false, false, null, HIEDRA)))
     }
 
     /** El comando que se usaría para un sistema, con una ROM de mentira (para la pantalla de sistemas). */
@@ -47,6 +55,8 @@ object Lanzar {
     private fun elegirDe(todos: List<Eleccion>, pedido: String): Eleccion? {
         if (todos.isEmpty()) return null
         if (pedido.isNotBlank()) todos.firstOrNull { it.etiqueta == pedido }?.let { return it }
+        // Automático: el jugador interno, si el sistema lo tiene (sabe cuándo acabas, guarda al salir y lo sube)
+        todos.firstOrNull { esInterno(it) }?.let { return it }
         return todos.filter { it.resultado is Resultado.Ok && !Comando.esRetroArch(it.plantilla) }.firstOrNull()
             ?: todos.firstOrNull { it.resultado is Resultado.Ok }
             ?: todos.firstOrNull { !Comando.esRetroArch(it.plantilla) } ?: todos.first()
@@ -102,6 +112,8 @@ object Lanzar {
                 TipoLanzador.ROM -> {
                     if (!Archivos.tiene(l.clave)) return "Esta ROM está en otro de tus dispositivos: añádela aquí (mismo sistema y mismo nombre de archivo) y se unirá sola."
                     val e = elegir(c, j) ?: return "Hiedra no sabe lanzar «${l.sistema}»"
+                    // El jugador interno: lleva la cuenta del tiempo él mismo (sabe exactamente cuándo juegas)
+                    if (esInterno(e)) { c.startActivity(JuegoActivity.intent(c, j.id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); return null }
                     when (val r = e.resultado) {
                         is Resultado.Ok -> { c.startActivity(aIntent(r.spec)); paqueteAbierto = r.spec.paquete; null }
                         is Resultado.Falta -> "${e.etiqueta}: ${r.motivo}"
@@ -164,9 +176,14 @@ object Sesion {
     }
 
     /** [paquete]: la app que se ha abierto (el emulador o el juego), para medir cuánto estuvo delante si hay permiso de uso. */
-    fun empezar(c: Context, j: Juego, paquete: String = "") {
+    /** Apunta que se ha empezado a jugar: «Jugando» si estaba pendiente, la última vez y una vez más. */
+    fun marcarJugado(j: Juego) {
         val k = if (j.estado == Estado.PENDIENTE) j.conEstado(Estado.JUGANDO) else j
         Biblioteca.poner(k.copy(ultima = System.currentTimeMillis(), propias = j.propias.copy(veces = j.propias.veces + 1)))
+    }
+
+    fun empezar(c: Context, j: Juego, paquete: String = "") {
+        marcarJugado(j)
         if (j.principal?.tipo != TipoLanzador.WEB) {
             p(c).edit().putString("id", j.id).putLong("desde", System.currentTimeMillis()).putString("paq", paquete).apply()
             // Con el permiso de uso, la sesión se cierra sola cuando el juego deja de estar delante (sin esperar a volver a Hiedra)

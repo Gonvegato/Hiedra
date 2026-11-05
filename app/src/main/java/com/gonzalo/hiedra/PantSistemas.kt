@@ -50,7 +50,7 @@ fun PantSistemas(alVolver: () -> Unit, alAnadirCarpeta: () -> Unit) {
                 Antetitulo("Sección · ${Catalogo.sistemas.size} sistemas", Modifier.padding(top = 10.dp), color = Acento, conCuadro = false)
                 FitTitle("Sistemas", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
                 Filete(3.dp)
-                Text("Cada consola, con el emulador que tú elijas. Hiedra no incluye emuladores: abre los que ya tienes instalados.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp, lineHeight = 22.sp, modifier = Modifier.padding(vertical = 12.dp))
+                Text("Cada consola, con el emulador que tú elijas. La Game Boy Advance se juega en la propia Hiedra; para las demás, Hiedra abre los emuladores que ya tienes instalados.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp, lineHeight = 22.sp, modifier = Modifier.padding(vertical = 12.dp))
                 Filete(2.dp)
                 Spacer(Modifier.height(12.dp))
                 Antetitulo("Carpetas de ROMs", Modifier.padding(bottom = 6.dp))

@@ -176,7 +176,7 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
                         val aqui = Archivos.tiene(l.clave)
                         Text((Catalogo.sistema(l.sistema)?.nombre ?: l.sistema) + " · " + (e?.etiqueta ?: "sin emulador"), color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
                         val r = e?.resultado
-                        Text((if (!aqui) "La ROM está en otro de tus móviles" else when (r) { is Resultado.Ok -> if (Comando.esRetroArch(e.plantilla)) "Instalado · necesita el núcleo descargado en RetroArch" else "Instalado y listo"; is Resultado.Falta -> r.motivo; null -> "" }).uppercase(),
+                        Text((if (!aqui) "La ROM está en otro de tus móviles" else if (Lanzar.esInterno(e)) "Se juega en Hiedra · " + Nucleos.describir(Nucleos.para(l.sistema)!!, Nucleos.instalado(ctx, Nucleos.para(l.sistema)!!.id)) + " · guarda al salir" else when (r) { is Resultado.Ok -> if (Comando.esRetroArch(e.plantilla)) "Instalado · necesita el núcleo descargado en RetroArch" else "Instalado y listo"; is Resultado.Falta -> r.motivo; null -> "" }).uppercase(),
                             color = if (aqui && r is Resultado.Ok) Muted else Acento, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     }
                     TipoLanzador.APP -> { Text("App de Android", color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 20.sp); Text(l.paquete, color = Muted, fontFamily = Body, fontSize = 12.sp) }
@@ -330,7 +330,9 @@ fun SelectorEmulador(sistemaId: String, juego: Juego?, alCerrar: () -> Unit) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp).verticalScroll(rememberScrollState())) {
             Antetitulo(if (juego != null) "Emulador de este juego" else "Emulador", Modifier.padding(bottom = 4.dp), color = Acento, conCuadro = false)
             FitTitle(sistema?.nombre ?: sistemaId, 34.sp, 36.sp, letterSpacing = (-1).sp, maxLines = 2)
-            Cuerpo("Los que ya tienes instalados salen marcados. «Automático» usa uno propio (sin núcleos que descargar) y, si no hay, RetroArch.", tam = 12, modifier = Modifier.padding(vertical = 8.dp))
+            Cuerpo(if (Nucleos.para(sistemaId) != null) "«Automático» usa Hiedra: el núcleo se baja la primera vez, al salir se guarda donde lo dejaste y sigues en tu otro móvil. Los demás emuladores siguen aquí; los que tienes instalados salen marcados."
+                else "Los que ya tienes instalados salen marcados. «Automático» usa uno propio (sin núcleos que descargar) y, si no hay, RetroArch.", tam = 12, modifier = Modifier.padding(vertical = 8.dp))
+            Nucleos.para(sistemaId)?.let { n -> BloqueNucleo(n) }
             Filete(2.dp)
             fun elegir(l: String) {
                 actual = l
@@ -341,9 +343,11 @@ fun SelectorEmulador(sistemaId: String, juego: Juego?, alCerrar: () -> Unit) {
             if (evaluados.isEmpty()) Cuerpo("Hiedra todavía no sabe lanzar este sistema.", modifier = Modifier.padding(top = 12.dp))
             evaluados.forEach { e ->
                 val r = e.resultado
-                val sub = when (r) {
-                    is Resultado.Ok -> if (Comando.esRetroArch(e.plantilla)) "Instalado · necesita el núcleo en RetroArch" else "Instalado"
-                    is Resultado.Falta -> r.motivo
+                val sub = when {
+                    Lanzar.esInterno(e) -> "El de Hiedra · " + Nucleos.describir(Nucleos.para(sistemaId)!!, remember(Nucleos.version) { Nucleos.instalado(ctx, Nucleos.para(sistemaId)!!.id) })
+                    r is Resultado.Ok -> if (Comando.esRetroArch(e.plantilla)) "Instalado · necesita el núcleo en RetroArch" else "Instalado"
+                    r is Resultado.Falta -> r.motivo
+                    else -> ""
                 }
                 Opcion(e.etiqueta, sub, actual == e.etiqueta, r is Resultado.Ok, (r as? Resultado.Falta)?.paquete) { elegir(e.etiqueta) }
             }
@@ -365,6 +369,43 @@ private fun Opcion(titulo: String, sub: String, elegida: Boolean, instalado: Boo
         else if (instalado && titulo != "Automático") Text("INSTALADO", color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
     }
     Filete(1.dp, Line)
+}
+
+/**
+ * El núcleo del jugador interno para un sistema: lo que hay instalado y Descargar / Actualizar / Quitar. Actualizar avisa: un estado
+ * guardado solo carga con la versión que lo hizo (la partida del cartucho no se pierde nunca).
+ */
+@Composable
+private fun BloqueNucleo(n: Nucleos.Nucleo) {
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val inst = remember(Nucleos.version) { Nucleos.instalado(ctx, n.id) }
+    var bajando by remember { mutableStateOf<Float?>(null) }
+    var mensaje by remember { mutableStateOf<String?>(null) }
+    var confirmar by remember { mutableStateOf(false) }
+    fun bajar() {
+        bajando = 0f; mensaje = null
+        scope.launch {
+            mensaje = runCatching { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Nucleos.instalar(ctx, n.id) { p -> bajando = p } } }
+                .fold({ "Listo: ${Nucleos.describir(n, it)}" }, { "No se ha podido bajar: ${it.message ?: "sin conexión"}" })
+            bajando = null
+        }
+    }
+    Antetitulo("Núcleo de Hiedra", Modifier.padding(top = 6.dp, bottom = 2.dp))
+    Text(Nucleos.describir(n, inst), color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+    if (inst != null) Text("VERSIÓN ${inst.version}", color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+    Row(horizontalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.padding(vertical = 6.dp)) {
+        when {
+            bajando != null -> Text("BAJANDO · ${((bajando ?: 0f) * 100).toInt()} %", color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.2.sp)
+            inst == null -> EnlaceRevista("Descargar ahora →", acento = true) { bajar() }
+            else -> {
+                EnlaceRevista(if (confirmar) "Sí, actualizar →" else "Actualizar", acento = confirmar) { if (confirmar) { confirmar = false; bajar() } else confirmar = true }
+                EnlaceRevista("Quitar") { Nucleos.quitar(ctx, n.id); mensaje = "Quitado: se volverá a bajar al jugar" }
+            }
+        }
+    }
+    if (confirmar) Cuerpo("Los estados guardados con esta versión pueden dejar de cargar con la nueva (en todos tus móviles, hasta que también la actualicen). La partida del cartucho no se pierde.", tam = 12)
+    mensaje?.let { Text(it, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp) }
 }
 
 /** Horas y minutos jugados, para corregirlos a mano. */

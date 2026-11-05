@@ -209,6 +209,16 @@ class CapturasTest {
     }
 
     @Test
+    fun emuladorDeHiedra() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra()
+        montar(oscuro = false)
+        ir("PASADOS")
+        rule.onAllNodesWithText("Pokémon Esmeralda", substring = true, useUnmergedTree = true)[0].performClick(); rule.waitForIdle()
+        rule.onNodeWithText("Emulador →", substring = true, ignoreCase = true).performScrollTo().performClick(); foto("6d_ficha_emulador_hiedra")
+    }
+
+    @Test
     fun servicios() {
         org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
         siembra()
