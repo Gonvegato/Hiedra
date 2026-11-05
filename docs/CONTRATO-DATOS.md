@@ -36,6 +36,10 @@ enlaza buscando esa clave en `k` de los juegos; a partir de ahí, por `id`.
 
 Para cada juego, lee `tiempo/<id>/*` y **suma** las fuentes (cada una trae solo lo suyo y no hay nada repetido). Lo del PC, de `suite/lib`.
 
+Cuándo cambia: al volver a Hiedra tras jugar (la sesión se cierra y se sube antes del sello `stamps`) y, con el permiso de uso de
+Android, también sin volver a Hiedra: cada cuarto de hora se mira si el emulador sigue delante y, cuando ya no, se cierra la sesión y se
+sube (desde 0.3.9).
+
 ## La valoración
 
 En Hiedra no se valora: la ficha solo LEE la general (0–100) y la reseña de Azabache, enlazadas por `id` (y por las claves antiguas).
