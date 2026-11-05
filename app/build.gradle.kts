@@ -11,8 +11,8 @@ android {
         applicationId = "com.gonzalo.hiedra"
         minSdk = 29
         targetSdk = 34
-        versionCode = 18
-        versionName = "0.3.13"
+        versionCode = 19
+        versionName = "0.3.14"
     }
     // Firma fija: cada versión nueva se instala encima de la anterior sin borrar tus juegos.
     signingConfigs {

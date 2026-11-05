@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.14
+
+- En las filas de datos (etiqueta · puntos · cifra), si no cabe todo en una línea, la etiqueta va entera arriba y la cifra debajo, en vez
+  de cortar la etiqueta con puntos suspensivos (como en Azabache 1.2.8).
+
 ## 0.3.13
 
 - El widget «Sigue jugando» alto y estrecho ya no corta su rótulo: ahí dice «Jugando».
