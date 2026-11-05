@@ -1,6 +1,8 @@
 package com.gonzalo.hiedra
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import org.json.JSONObject
 
 /**
@@ -44,6 +46,19 @@ object NotaAzabache {
     fun de(notas: Map<String, Nota>, j: Juego): Nota? = j.claves.firstNotNullOfOrNull { notas[it] } ?: notas["juego:" + Catalogo.norm(j.titulo)]
 
     private fun prefs(c: Context) = c.getSharedPreferences("hiedra_azabache", Context.MODE_PRIVATE)
+
+    /** Sube cuando llegan notas nuevas (las fichas abiertas vuelven a leer). */
+    var version by androidx.compose.runtime.mutableIntStateOf(0)
+        private set
+    private val mirando = java.util.concurrent.atomic.AtomicBoolean(false)
+    /** Al oír el sello de Azabache: se bajan las notas dentro de poco (varios avisos seguidos, una sola bajada). */
+    fun pronto(c: Context) {
+        if (!Cuenta.vinculada || !mirando.compareAndSet(false, true)) return
+        val app = c.applicationContext
+        kotlin.concurrent.thread {
+            try { Thread.sleep(600); if (refrescar(app)) android.os.Handler(android.os.Looper.getMainLooper()).post { version++ } } finally { mirando.set(false) }
+        }
+    }
 
     /** Lo último que se bajó (guardado en el móvil, para verlo al momento y sin red). */
     fun cargar(c: Context): Map<String, Nota> {

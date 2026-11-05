@@ -95,7 +95,7 @@ fun Ficha(id: String, alCerrar: () -> Unit, alJugar: (Juego) -> Unit, abrirPorta
     var sgdb by remember { mutableStateOf(false) }
     var encuadre by remember { mutableStateOf(false) }
     // La valoración de Azabache, solo para verla (se refresca de vez en cuando)
-    var notas by remember { mutableStateOf(NotaAzabache.cargar(ctx)) }
+    var notas by remember(NotaAzabache.version) { mutableStateOf(NotaAzabache.cargar(ctx)) }
     LaunchedEffect(Unit) { if (Cuenta.vinculada && NotaAzabache.vieja(ctx)) withContext(Dispatchers.IO) { if (NotaAzabache.refrescar(ctx)) notas = NotaAzabache.cargar(ctx) } }
     LaunchedEffect(abrirPortada) { if (abrirPortada) alVerPortada() }
     // Los datos de fuera (fecha, estudio, géneros, lo que suele durar): se piden si faltan o son viejos

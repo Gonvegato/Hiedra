@@ -33,6 +33,7 @@ object SincroP {
     @Volatile private var app: Context? = null
     private var programada: Job? = null
     private var escucha: FbStream? = null
+    private var escuchaAzabache: FbStream? = null
     private val bajando = AtomicBoolean(false)
     @Volatile private var fallos = 0
 
@@ -187,11 +188,15 @@ object SincroP {
         if (escucha != null) return
         bajarPronto()
         val f = FbStream("hiedra", { renovar -> Cuenta.urlFlujo("${Cuenta.raiz}/stamps", renovar) }, { _, _ -> bajarPronto() }, { })
+        // Azabache: en cuanto valoras un juego allí (sella su «stamps»), la nota se ve aquí al momento
+        val g = FbStream("hiedra-azabache", { renovar -> Cuenta.urlFlujo("/users/${Cuenta.uid}/stamps", renovar) }, { _, _ -> NotaAzabache.pronto(c) }, { })
+        escuchaAzabache = g
+        g.start(scope)
         escucha = f
         f.start(scope)
     }
 
-    fun parar() { escucha?.stop(); escucha = null }
+    fun parar() { escucha?.stop(); escucha = null; escuchaAzabache?.stop(); escuchaAzabache = null }
 
     private fun bien(c: Context) {
         fallos = 0
