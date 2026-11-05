@@ -636,7 +636,7 @@ object Widgets {
                 h > w * 1.15f -> {
                     // Alto: portada arriba y el título debajo
                     fondo(); lavado()
-                    seccion("Sigue jugando", pad, pad, w - 2 * pad - 50f, tinta, acento)
+                    seccion(if (w < 200f) "Jugando" else "Sigue jugando", pad, pad, w - 2 * pad - 50f, tinta, acento)   // (en el estrecho no cabe «Sigue jugando»)
                     val top = pad + 20f
                     val ch = h * 0.5f - top
                     val cw = min(ch * 0.66f, w * 0.55f)
