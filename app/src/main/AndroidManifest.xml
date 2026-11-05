@@ -3,6 +3,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Actualizarse sola desde tu kDrive (Actualizador.kt): instalar la versión nueva de sí misma, y reabrirse después -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Android 13 o más: sin este permiso no se ven los avisos del actualizador («tienes una versión nueva», «se ha actualizado») -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- Opcional: el tiempo de juego exacto (Ajustes → Juegos). Se pide a mano en los ajustes de Android. -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
@@ -12,6 +14,9 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- Las hermanas (Azabache ya estaba; Marfil y Cobalto, por si algún día Hiedra las abre: el intent MAIN/LAUNCHER de arriba ya las hace visibles) -->
+        <package android:name="com.gonzalo.marfil" />
+        <package android:name="com.gonzalo.cobalto" />
         <package android:name="com.gonzalo.gamerate" />
         <provider android:authorities="com.gonzalo.gamerate.tema" />
         <package android:name="Ali.Xanite" />

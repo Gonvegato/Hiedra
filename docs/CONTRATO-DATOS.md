@@ -45,3 +45,9 @@ Azabache es la dueña de la valoración.
 
 - Apuntes de texto libre, nota de 0 a 10 y maqueta de casillas: no existen en Hiedra.
 - Las capturas del PC se quedan en el móvil (y en la galería): no se publican aparte de lo que hace Atrio del PC en `suite/shots`.
+
+## Verse entre hermanas
+
+- **Verse entre hermanas**: desde Android 11 una app no ve a otra (`getLaunchIntentForPackage` da null) si no la declara en `<queries>` de su
+  manifiesto. Cada hermana declara a las demás (`com.gonzalo.hiedra`, `com.gonzalo.marfil`, `com.gonzalo.cobalto`, `com.gonzalo.gamerate`);
+  un test (`ManifiestoHermanasTest`) lo vigila. Sin esto, «Jugar en Hiedra», «Leer en Marfil» y «Escribir en Cobalto» no salen nunca en un móvil.

@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.6
+
+- **Arreglo**: en Android 13 o más, los avisos del actualizador («Hiedra tiene una versión nueva», «Hiedra se ha actualizado, toca para abrirla»)
+  no se veían nunca: faltaba el permiso de avisos. Ahora se declara y se concede desde Ajustes → Avanzado («Avisos de actualización»).
+
 ## 0.3.5
 
 - Lo que Azabache sube (sus fichas, para las claves de los servicios y «En Azabache») no se vuelve a bajar si sus sellos no han cambiado:
