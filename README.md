@@ -15,6 +15,12 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.12
+
+- La fila de orden y filtros (Recientes · Nombre · …) lleva el mismo degradado en los bordes que las pestañas.
+- El degradado de los bordes de las pestañas se pintaba fuera de la vista (no se veía): ahora sí. Y el título de la sección va en plural
+  como su pestaña («Pasados»).
+
 ## 0.3.11
 
 - Las secciones se llaman en plural, como en Marfil y Azabache: Jugando · Pendientes · Pasados · Abandonados · Sagas (también los estantes

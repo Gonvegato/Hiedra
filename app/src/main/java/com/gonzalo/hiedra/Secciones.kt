@@ -192,7 +192,7 @@ private fun PaginaEstante(estado: Estado, todos: List<Juego>, menu: Menu?, alMen
         item {
             Column {
                 Antetitulo("Sección · ${delEstado.size} ${if (delEstado.size == 1) "juego" else "juegos"}", Modifier.padding(top = 12.dp), color = Acento, conCuadro = false)
-                FitTitle(estado.nombre, 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
+                FitTitle(if (estado == Estado.JUGANDO) "Jugando" else estado.nombre + "s", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
                 Filete(1.dp, Line)
                 MenusPequenos(menu, cuentas) { sistema = null; alMenu(it) }
                 // Cómo se ordena esta sección (se recuerda)
@@ -314,13 +314,13 @@ private fun PestanasPaginas(nombres: List<String>, sel: Int, cuentas: List<Int>,
         if (x < scroll.value || x + w > scroll.value + anchoFila) scroll.animateScrollTo((x + w / 2 - anchoFila / 2).coerceIn(0, scroll.maxValue))
     }
     Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().onGloballyPositioned { anchoFila = it.size.width }.horizontalScroll(scroll).drawWithContent {
+        Row(Modifier.fillMaxWidth().onGloballyPositioned { anchoFila = it.size.width }.drawWithContent {
                 // Un degradado en los bordes cuando hay más pestañas por un lado o por otro (para que no parezcan cortadas)
                 drawContent()
                 val f = 28.dp.toPx()
                 if (scroll.value > 0) drawRect(Brush.horizontalGradient(listOf(Paper, Color.Transparent), 0f, f), Offset.Zero, Size(f, size.height))
                 if (scroll.value < scroll.maxValue) drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Paper), size.width - f, size.width), Offset(size.width - f, 0f), Size(f, size.height))
-            }, horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.Bottom) {
+            }.horizontalScroll(scroll), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.Bottom) {
             nombres.forEachIndexed { i, n ->
                 val on = i == sel
                 Row(Modifier.onGloballyPositioned { c -> sitios[i] = (c.positionInParent().x + scroll.value).roundToInt() to c.size.width }.clickable { onSel(i) }
