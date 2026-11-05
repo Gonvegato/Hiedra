@@ -15,6 +15,10 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.3
+
+- En la portada, «+ Añadir» en el acento, como en las listas y como en Marfil y Cobalto; el pie de Ajustes dice de quién es hermana.
+
 ## 0.3.2: el tiempo de juego exacto
 
 - **Ajustes → Juegos → Tiempo de juego**: con el permiso «acceso al uso» de Android (se da desde ahí), al volver a Hiedra se cuenta solo lo

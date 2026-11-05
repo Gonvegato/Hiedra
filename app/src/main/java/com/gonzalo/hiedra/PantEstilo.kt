@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.3.2"
+const val VERSION = "0.3.3"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -140,7 +140,7 @@ fun PantEstilo(alVolver: () -> Unit, alSistemas: () -> Unit = {}) {
         Filete(3.dp)
         Spacer(Modifier.height(10.dp))
         Etiqueta("Hiedra $VERSION")
-        Text("Hermana de Atrio. Los comandos para abrir emuladores salen de ES-DE Frontend (licencia MIT, © Northwestern Software AB, Leon Styhre y Alec Lofquist). Las portadas, de libretro.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
+        Text("Hiedra es hermana de Azabache, Marfil y Cobalto. Los comandos para abrir emuladores salen de ES-DE Frontend (licencia MIT, © Northwestern Software AB, Leon Styhre y Alec Lofquist). Las portadas, de libretro.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         Spacer(Modifier.height(30.dp))
     }
 }

@@ -187,7 +187,7 @@ class CapturasTest {
         org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
         siembra()
         montar(oscuro = false)
-        ir("AÑADIR"); foto("9_anadir")
+        ir("+ AÑADIR"); foto("9_anadir")
     }
 
     @Test

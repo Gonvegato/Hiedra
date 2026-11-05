@@ -195,7 +195,7 @@ fun PantInicio(alAbrir: (Juego) -> Unit, alJugar: (Juego) -> Unit, alAnadir: (Ti
     Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).statusBarsPadding().padding(horizontal = 28.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             EnlaceRevista("Buscar") { alBuscar() }
-            EnlaceRevista("Añadir", Modifier.padding(start = 14.dp)) { alAnadir(null) }
+            EnlaceRevista("+ Añadir", Modifier.padding(start = 14.dp), acento = true) { alAnadir(null) }
             EnlaceRevista(if (editando) "Listo" else "Editar", Modifier.padding(start = 14.dp), acento = editando) { editando = !editando }
             Spacer(Modifier.weight(1f))
             Icon(Icons.Filled.Settings, "Ajustes", tint = Charcoal, modifier = Modifier.padding(start = 6.dp).clickable { alIr(Destino.Ajustes) }.padding(8.dp).size(22.dp))
