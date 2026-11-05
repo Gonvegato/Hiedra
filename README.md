@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.5
+
+- Lo que Azabache sube (sus fichas, para las claves de los servicios y «En Azabache») no se vuelve a bajar si sus sellos no han cambiado:
+  menos datos cada vez que Hiedra sincroniza.
+
 ## 0.3.4: la nota de Azabache, al momento
 
 - Hiedra escucha el sello de Azabache: en cuanto valoras un juego allí, «En Azabache» en su ficha cambia sin salir ni esperar los 15 minutos.
