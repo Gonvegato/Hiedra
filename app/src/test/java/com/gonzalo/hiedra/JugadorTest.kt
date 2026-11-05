@@ -210,6 +210,18 @@ class LanzarInternoTest {
         assertEquals("Esta ROM está en otro de tus móviles: en su ficha, «Jugar» la baja de tu kDrive.", Lanzar.lanzar(ctx, Biblioteca.por("s1")!!))
     }
 
+    @Test fun mezclarNoQuitaLaPortadaQuePusisteMientras() {
+        Biblioteca.juegos.clear()
+        val j = Juego("p1", "Advance Wars", mod = 1)
+        Biblioteca.juegos.add(j)
+        val mezcla = listOf(j.copy(titulo = "Advance Wars 2", mod = 2))   // hecha con la copia de antes
+        Biblioteca.juegos[0] = j.copy(portada = "/files/portadas/p1-9.jpg")  // mientras, pusiste su portada
+        Biblioteca.aplicarMezcla(mezcla, emptyMap())
+        val r = Biblioteca.por("p1")!!
+        assertEquals("/files/portadas/p1-9.jpg", r.portada); assertEquals("Advance Wars 2", r.titulo)
+        Biblioteca.juegos.clear()
+    }
+
     @Test fun sinNucleoNoSale() {
         val r = RomRef("content://x", "/storage/emulated/0/Roms/snes/Juego.sfc")
         assertFalse(Lanzar.evaluar(ctx, "snes", r).any { Lanzar.esInterno(it) })

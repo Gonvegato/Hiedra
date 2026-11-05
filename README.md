@@ -15,6 +15,11 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.4.2
+
+- Arreglo: al mezclar tu biblioteca con la de tus otros móviles se podía perder la portada que acababas de poner (o que se acababa de
+  bajar de tu kDrive) si llegaba justo mientras se mezclaba. Ahora la portada se toma de como está en ese momento.
+
 ## 0.4.1 — las ROMs, de un móvil a otro
 
 - **Al añadir una ROM** (sueltas o al recorrer una carpeta) se sube sola a tu kDrive, con wifi, sin esperar a volver a abrir Hiedra. Si

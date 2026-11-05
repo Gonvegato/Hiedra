@@ -296,7 +296,11 @@ object Biblioteca {
 
     /** Pone en la biblioteca lo que ha salido de mezclar con tus otros dispositivos (sin tocar la hora de cambio de nadie). */
     fun aplicarMezcla(nuevos: List<Juego>, borr: Map<String, Long>) {
-        juegos.clear(); juegos.addAll(nuevos)
+        // La mezcla se hizo con una copia de hace un momento: la portada (que es de este móvil) se toma de como está AHORA, por si
+        // mientras tanto pusiste una o se bajó de tu kDrive (si no, se perdía al aplicar la mezcla)
+        val ahora = juegos.associateBy { it.id }
+        val unidos = nuevos.map { n -> ahora[n.id]?.let { cur -> if (cur.portada != n.portada) n.copy(portada = cur.portada, zoom = cur.zoom, ox = cur.ox, oy = cur.oy) else n } ?: n }
+        juegos.clear(); juegos.addAll(unidos)
         borrados.clear(); borrados.putAll(borr)
         guardar()
     }
