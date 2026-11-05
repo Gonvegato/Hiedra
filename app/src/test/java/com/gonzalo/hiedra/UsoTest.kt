@@ -30,6 +30,21 @@ class UsoTest {
         assertEquals(9 * M, d.ms)
     }
 
+    private fun paso(min: Long, delante: Boolean, clase: String) = Uso.Paso(min * M, delante, clase)
+
+    @Test fun cambiarDePantallaDentroDelEmuladorNoEsSalir() {
+        // Dolphin, PPSSPP…: del menú (A) a la pantalla del juego (B): Android apunta «detrás A», «delante B» y, un momento después, «parada A».
+        // La partida sigue delante hasta el minuto 50: se cuenta entera (antes se perdía todo lo que iba tras «parada A»).
+        val d = Uso.delante(listOf(paso(1, true, "A"), paso(5, false, "A"), paso(5, true, "B"), paso(5, false, "A"), paso(50, false, "B")), 0, 60 * M)!!
+        assertEquals(49 * M, d.ms); assertEquals(50 * M, d.fin)
+    }
+
+    @Test fun volverAlMenuYSeguirJugandoCuentaTodo() {
+        // Del juego (B) al menú (A) y otra vez al juego: nunca se sale de la app, así que cuenta del 1 al 30 seguido
+        val d = Uso.delante(listOf(paso(1, true, "B"), paso(10, false, "B"), paso(10, true, "A"), paso(10, false, "B"), paso(12, false, "A"), paso(12, true, "B"), paso(30, false, "B")), 0, 60 * M)!!
+        assertEquals(29 * M, d.ms); assertEquals(30 * M, d.fin)
+    }
+
     @Test fun sinPasosNoSeSabe() {
         assertNull(Uso.delante(emptyList(), 0, 60 * M))
         assertNull(Uso.delante(listOf(paso(1, true)), 60 * M, 0))

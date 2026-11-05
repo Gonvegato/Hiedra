@@ -15,6 +15,12 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.3.8
+
+- **Arreglo del tiempo exacto**: con el permiso de uso, un emulador con varias pantallas (Dolphin, PPSSPP, DuckStation… pasan de su menú a la
+  pantalla del juego) hacía que se perdiera casi toda la partida: Android apunta «detrás» la pantalla vieja un momento después de poner
+  «delante» la nueva, y eso se tomaba por salir de la app. Ahora la app cuenta como delante mientras alguna de sus pantallas lo esté.
+
 ## 0.3.7
 
 - Textos al día: lo que seguía diciendo «Atrio» para hablar del móvil (seguir sus colores en directo, copiar su apariencia de tu cuenta,

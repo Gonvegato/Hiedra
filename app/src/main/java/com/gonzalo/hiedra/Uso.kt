@@ -23,23 +23,34 @@ object Uso {
     /** Abre la pantalla de Android donde se da el permiso. */
     fun pedir(c: Context) { runCatching { c.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
 
-    /** Un paso de la app por delante o por detrás (lo que Android apunta). */
-    class Paso(val t: Long, val delante: Boolean)
+    /** Un paso de una pantalla de la app por delante o por detrás (lo que Android apunta), con la pantalla ([clase]) a la que se refiere. */
+    class Paso(val t: Long, val delante: Boolean, val clase: String = "")
 
     /** Lo que estuvo delante: el total y cuándo acabó la última vez (para repartirlo entre días). */
     class Delante(val ms: Long, val fin: Long)
 
     /**
-     * Suma lo que la app estuvo delante entre [desde] y [hasta] a partir de sus pasos (en orden de tiempo). Si ya estaba delante al empezar
-     * (su primer paso es «detrás»), cuenta desde [desde]; si sigue delante al acabar, cuenta hasta [hasta]. Sin red ni móvil: se prueba.
+     * Suma lo que la app estuvo delante entre [desde] y [hasta] a partir de sus pasos (en orden de tiempo). La app está delante mientras
+     * alguna de sus pantallas lo esté: un emulador que pasa de su menú a la pantalla del juego apunta «delante» la nueva y, un momento
+     * después, «detrás» la vieja, y eso no es salir de la app (si se contara, se perdería toda la partida hasta el siguiente «delante»).
+     * Si ya estaba delante al empezar (su primer paso es «detrás», sin «delante» antes), cuenta desde [desde]; si sigue delante al acabar,
+     * cuenta hasta [hasta]. Sin red ni móvil: se prueba.
      */
     fun delante(pasos: List<Paso>, desde: Long, hasta: Long): Delante? {
         if (pasos.isEmpty() || hasta <= desde) return null
         var total = 0L; var abierto: Long? = null; var fin = desde
+        val delante = HashSet<String>()          // las pantallas de la app que están delante ahora mismo
+        var algunDelante = false
         for (p in pasos.sortedBy { it.t }) {
             val t = p.t.coerceIn(desde, hasta)
-            if (p.delante) { if (abierto == null) abierto = t }
-            else { val a = abierto ?: if (total == 0L && fin == desde) desde else null; if (a != null) { total += t - a; fin = t; abierto = null } }
+            if (p.delante) {
+                algunDelante = true
+                if (delante.add(p.clase) && abierto == null) abierto = t
+            } else {
+                if (!algunDelante && abierto == null && total == 0L && fin == desde) { total += t - desde; fin = t; continue }
+                delante.remove(p.clase)
+                if (delante.isEmpty()) abierto?.let { total += t - it; fin = t; abierto = null }
+            }
         }
         abierto?.let { total += hasta - it; fin = hasta }
         return Delante(total, fin)
@@ -56,9 +67,10 @@ object Uso {
             while (ev.hasNextEvent()) {
                 ev.getNextEvent(e)
                 if (e.packageName != paquete) continue
+                val clase = e.className ?: ""
                 when (e.eventType) {
-                    UsageEvents.Event.ACTIVITY_RESUMED -> out += Paso(e.timeStamp, true)
-                    UsageEvents.Event.ACTIVITY_PAUSED, UsageEvents.Event.ACTIVITY_STOPPED -> out += Paso(e.timeStamp, false)
+                    UsageEvents.Event.ACTIVITY_RESUMED -> out += Paso(e.timeStamp, true, clase)
+                    UsageEvents.Event.ACTIVITY_PAUSED, UsageEvents.Event.ACTIVITY_STOPPED -> out += Paso(e.timeStamp, false, clase)
                 }
             }
             out
