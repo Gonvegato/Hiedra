@@ -103,7 +103,8 @@ Los widgets, en `docs/widgets/`.
 ## Cómo se trabaja
 
 - `ContratoTest` deja en `app/build/outputs/contrato/hiedra.json` lo que Hiedra sube a la cuenta tal cual; se copia a
-  `azabache/herramientas/casos/hermanas/` y la prueba `ContratoHermanasTest` de Azabache comprueba que lo lee entero.
+  `azabache/herramientas/casos/hermanas/` y la prueba `ContratoHermanasTest` de Azabache comprueba que lo lee entero. Al revés,
+  `herramientas/casos/azabache.json` es lo que sube Azabache (su `ContratoTest`) y `NotaAzabacheContratoTest` comprueba que «En Azabache» lo lee.
 - Pruebas: `gradle :app:testDebugUnitTest` (0 fallos). Con `-Proborazzi.test.record=true` se graban las capturas (`app/build/outputs/roborazzi/`)
   y los widgets (`app/build/outputs/widgets/`, de donde salen las vistas previas `w_prev_*.png`). Las de sincronización y nube usan los servidores
   de mentira de Atrio (`Atrio-Suite-2.0/herramientas/fakefirebase.js` y `fakekdrive.js`, con `node`); sin ellos se saltan.
