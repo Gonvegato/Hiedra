@@ -170,7 +170,7 @@ object NubeP {
 
     /** Baja la ROM a [destino] (se comprueba que llega entera). Devuelve el archivo creado. */
     fun bajarRom(c: Context, j: Juego, f: Ficha, destino: Carpeta): Arch {
-        val tmp = File(c.cacheDir, "rom-${kid(j)}.tmp")
+        val tmp = temporalRom(c, j)
         try {
             KDrive.download(c, f.id, tmp)
             if (tmp.length() != f.s || hashDe(tmp.inputStream()) != f.h) throw IOException("la ROM ha llegado incompleta")
@@ -178,6 +178,51 @@ object NubeP {
             a.escribir().use { o -> tmp.inputStream().use { it.copyTo(o) } }
             return a
         } finally { tmp.delete() }
+    }
+
+    /** El archivo a medio bajar de una ROM (para enseñar cuánto lleva). */
+    fun temporalRom(c: Context, j: Juego) = File(c.cacheDir, "rom-${kid(j)}.tmp")
+
+    /**
+     * Dónde se dejan en este móvil las ROMs que bajas de tu kDrive: la primera carpeta de ROMs que Hiedra recorre (Sistemas →
+     * Carpetas de ROMs) en la que se pueda escribir. Dentro, en la subcarpeta del sistema («gba», «snes»…), como las ordena ES-DE.
+     */
+    fun carpetaBajadas(c: Context): DocumentFile? = Biblioteca.carpetas.toList().firstNotNullOfOrNull { f ->
+        runCatching { DocumentFile.fromTreeUri(c, Uri.parse(f.uri))?.takeIf { it.exists() && it.canWrite() } }.getOrNull()
+    }
+
+    /**
+     * Baja la ROM de [j] de tu kDrive a la carpeta de bajadas (en la subcarpeta de su sistema) y la apunta en este móvil, como si la
+     * hubieras añadido aquí: así la abre cualquier emulador. Si ya estaba allí entera, no se baja otra vez. Bloqueante (red).
+     */
+    fun bajarRomAqui(c: Context, j: Juego, f: Ficha, raiz: DocumentFile): Arch {
+        val rom = j.rom ?: throw IOException("ese juego no tiene ROM")
+        val sub = raiz.listFiles().firstOrNull { it.isDirectory && it.name.equals(j.sistema, true) } ?: raiz.createDirectory(j.sistema) ?: raiz
+        val ya = sub.findFile(f.n)?.takeIf { it.isFile && it.length() == f.s }?.let { DocArch(c, it) }
+        val a = ya ?: bajarRom(c, j, f, DocCarpeta(c, sub))
+        val doc = runCatching { android.provider.DocumentsContract.getDocumentId(Uri.parse(a.uri)) }.getOrDefault("")
+        Archivos.poner(rom.clave, a.uri, Comando.rutaDeDocId(doc, android.os.Environment.getExternalStorageDirectory().absolutePath).orEmpty())
+        Biblioteca.guardar()
+        return a
+    }
+
+    /** Baja la ROM a un archivo de Hiedra (el jugador interno, sin carpeta de ROMs). Se comprueba que llega entera. Bloqueante (red). */
+    fun bajarRomAArchivo(c: Context, j: Juego, f: Ficha, dest: File) {
+        val tmp = temporalRom(c, j)
+        try {
+            KDrive.download(c, f.id, tmp)
+            if (tmp.length() != f.s || hashDe(tmp.inputStream()) != f.h) throw IOException("la ROM ha llegado incompleta")
+            dest.parentFile?.mkdirs()
+            if (!tmp.renameTo(dest)) { tmp.copyTo(dest, overwrite = true) }
+        } finally { tmp.delete() }
+    }
+
+    /** Las ROMs de tu biblioteca que están en tu kDrive pero no en este móvil. Bloqueante (red). */
+    fun romsQueFaltan(): List<Pair<Juego, Ficha>> {
+        val remoto = Cuenta.db("GET", "${Cuenta.raiz}/nube/roms", null)?.let { JSONObject(it) } ?: return emptyList()
+        return Biblioteca.juegos.toList().filter { it.enOtroDispositivo }.mapNotNull { j ->
+            remoto.optJSONObject(kid(j))?.optJSONObject("f")?.let { deJson(it)["rom"] }?.let { j to it }
+        }
     }
 
     /** ¿Subir las ROMs solas? (con wifi; el interruptor está en Ajustes → Avanzado) */

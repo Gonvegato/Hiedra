@@ -15,6 +15,26 @@ móvil, la app, la web y el mismo juego en el PC, todo en una ficha, en los men�
 guardan **por fuente**: las de este móvil, las de cada uno de tus otros móviles (se suman) y las externas (Steam, cada PC con Atrio, lo jugado en
 Carmesí), que se mezclan por máximo y nunca se suman dos veces. Dónde está cada ROM es cosa de cada móvil y no viaja.
 
+## 0.4.1 — las ROMs, de un móvil a otro
+
+- **Al añadir una ROM** (sueltas o al recorrer una carpeta) se sube sola a tu kDrive, con wifi, sin esperar a volver a abrir Hiedra. Si
+  añades más mientras sube, también. Desde su ficha se puede subir ya, también con datos.
+- **En tu otro móvil, «Jugar» la baja**: si la ROM de un juego está en tu kDrive y no en ese móvil, «Jugar» (o su acceso directo)
+  enseña de qué archivo se trata y cuánto pesa, la baja con su progreso a tu carpeta de ROMs (en la subcarpeta del sistema, «gba»,
+  «snes»…, donde la encuentran tus emuladores), comprueba que ha llegado entera, la deja apuntada y abre el juego. La primera vez, si
+  no tienes carpeta de ROMs en la que se pueda escribir, te pide una y se queda.
+- **El jugador de Hiedra (GBA) la baja él solo** al abrir el juego, con su progreso en la pantalla de carga; sin carpeta de ROMs, la
+  guarda dentro de Hiedra.
+- **Ajustes → Avanzado → «Bajar las ROMs que faltan en este móvil»**: todas las que están en tu kDrive y aquí no, con wifi y en segundo
+  plano (sigue aunque cierres Hiedra; si se corta, sigue por donde iba).
+- Las carpetas de ROMs se guardan ahora con permiso de escritura (para dejar ahí las que bajas). Las que ya tenías solo con lectura:
+  la primera bajada te pide elegirla otra vez.
+- Los «días seguidos» siguen la regla común de la familia (`Racha.kt`, documentada en el contrato): un minuto jugado cuenta. Sin
+  cambios para ti: era la misma regla.
+
+Lo que no se ha podido probar en un móvil: la bajada y la subida de verdad contra tu kDrive (la parte de red es la misma que ya usaban
+las ROMs desde la ficha; lo nuevo es cuándo se lanza y dónde se deja).
+
 ## 0.4.0 — el jugador interno (Fase A: Game Boy Advance)
 
 Hiedra juega ella misma a los juegos de **GBA**, sin otra app: con el núcleo **mGBA** de libretro (vía LibretroDroid), y con lo que un

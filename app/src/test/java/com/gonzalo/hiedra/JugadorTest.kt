@@ -196,6 +196,20 @@ class LanzarInternoTest {
         assertTrue(Lanzar.esInterno(Lanzar.elegirSistema(ctx, "gba")))
     }
 
+    @Test fun romEnOtroMovilConElJugadorDeHiedra() {
+        Biblioteca.cargada = true; Biblioteca.juegos.clear(); Archivos.limpiarParaPruebas()
+        // Una ROM de GBA que está en otro móvil (aquí no hay archivo): el jugador de Hiedra la baja él solo de tu kDrive
+        Biblioteca.juegos.add(Juego("g1", "Golden Sun", lanzadores = listOf(Lanzador.rom("gba", "Golden Sun"))))
+        val gba = Biblioteca.por("g1")!!
+        assertTrue(gba.enOtroDispositivo)
+        assertNull(Lanzar.lanzar(ctx, gba))
+        val abierta = org.robolectric.Shadows.shadowOf(ctx as android.app.Application).nextStartedActivity
+        assertEquals(JuegoActivity::class.java.name, abierta.component?.className)
+        // Con otro emulador hace falta el archivo: se dice cómo bajarlo
+        Biblioteca.juegos.add(Juego("s1", "Chrono Trigger", lanzadores = listOf(Lanzador.rom("snes", "Chrono Trigger"))))
+        assertEquals("Esta ROM está en otro de tus móviles: en su ficha, «Jugar» la baja de tu kDrive.", Lanzar.lanzar(ctx, Biblioteca.por("s1")!!))
+    }
+
     @Test fun sinNucleoNoSale() {
         val r = RomRef("content://x", "/storage/emulated/0/Roms/snes/Juego.sfc")
         assertFalse(Lanzar.evaluar(ctx, "snes", r).any { Lanzar.esInterno(it) })

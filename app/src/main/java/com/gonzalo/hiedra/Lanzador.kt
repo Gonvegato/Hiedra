@@ -110,8 +110,9 @@ object Lanzar {
             val l = j.principal ?: return "«${j.titulo}» no se juega desde el móvil" + (if (j.plataforma.isNotBlank()) " (${j.plataforma})" else "") + ". Si tienes su ROM, su app o su web, añádela desde la ficha."
             when (l.tipo) {
                 TipoLanzador.ROM -> {
-                    if (!Archivos.tiene(l.clave)) return "Esta ROM está en otro de tus dispositivos: añádela aquí (mismo sistema y mismo nombre de archivo) y se unirá sola."
                     val e = elegir(c, j) ?: return "Hiedra no sabe lanzar «${l.sistema}»"
+                    // Sin la ROM aquí: el jugador de Hiedra la baja él solo de tu kDrive; los demás emuladores necesitan el archivo
+                    if (!Archivos.tiene(l.clave) && !esInterno(e)) return "Esta ROM está en otro de tus móviles: en su ficha, «Jugar» la baja de tu kDrive."
                     // El jugador interno: lleva la cuenta del tiempo él mismo (sabe exactamente cuándo juegas)
                     if (esInterno(e)) { c.startActivity(JuegoActivity.intent(c, j.id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); return null }
                     when (val r = e.resultado) {

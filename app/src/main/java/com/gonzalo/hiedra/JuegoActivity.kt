@@ -192,9 +192,10 @@ class JuegoActivity : ComponentActivity() {
                 fase = FaseJuego.Preparando("Bajando el núcleo ${nucleoDef.nombre}…", 0f)
                 withContext(Dispatchers.IO) { Nucleos.instalar(this@JuegoActivity, nucleoDef.id) { p -> fase = FaseJuego.Preparando("Bajando el núcleo ${nucleoDef.nombre}…", p) } }
             }
-            // 2. La ROM, en un archivo que el núcleo pueda abrir
+            // 2. La ROM, en un archivo que el núcleo pueda abrir (si está en otro móvil, se baja antes de tu kDrive)
+            val (jj, local) = if (j.uri.isBlank()) bajarDeLaNube(j) else j to null
             fase = FaseJuego.Preparando("Abriendo «${j.titulo}»…")
-            val rom = withContext(Dispatchers.IO) { prepararRom(j) }
+            val rom = withContext(Dispatchers.IO) { prepararRom(jj, local) }
             // 3. La partida (SRAM) más reciente: la de aquí o la de la carpeta de guardados (que ya trae la de la nube si era más nueva)
             val partida = withContext(Dispatchers.IO) { Estados.leerPartida(this@JuegoActivity, j) }
             // 4. El estado automático: el de aquí o, si es más nuevo, el de otro móvil
@@ -229,13 +230,41 @@ class JuegoActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * La ROM está en otro de tus móviles: se baja de tu kDrive. Con carpeta de ROMs en este móvil, a ella (y queda apuntada, para
+     * cualquier emulador); sin ella, dentro de Hiedra. Devuelve el juego al día y, en el segundo caso, el archivo.
+     */
+    private suspend fun bajarDeLaNube(j: Juego): Pair<Juego, File?> {
+        val app = applicationContext
+        val f = withContext(Dispatchers.IO) { if (Cuenta.vinculada && KDrive.on(app)) runCatching { NubeP.romEnNube(j) }.getOrNull() else null }
+            ?: throw IOException("La ROM de «${j.titulo}» no está en este móvil ni en tu kDrive. Se sube sola, con wifi, al abrir Hiedra en el móvil donde la tienes.")
+        val tmp = NubeP.temporalRom(app, j)
+        val vigia = lifecycleScope.launch {
+            while (isActive) { fase = FaseJuego.Preparando("Bajando «${f.n}» de tu kDrive…", if (f.s > 0) (tmp.length().toFloat() / f.s).coerceIn(0f, 1f) else null); delay(300) }
+        }
+        try {
+            val raiz = NubeP.carpetaBajadas(app)
+            if (raiz != null) {
+                withContext(Dispatchers.IO) { NubeP.bajarRomAqui(app, j, f, raiz) }
+                return (Biblioteca.por(j.id) ?: j) to null
+            }
+            val dest = File(filesDir, "roms/${j.id}/${f.n}")
+            if (!(dest.exists() && dest.length() == f.s)) {
+                File(filesDir, "roms").listFiles()?.filter { it.name != j.id }?.forEach { it.deleteRecursively() } // solo la del último juego
+                withContext(Dispatchers.IO) { NubeP.bajarRomAArchivo(app, j, f, dest) }
+            }
+            return j to dest
+        } finally { vigia.cancel() }
+    }
+
     /** Copia la ROM a la caché de la app (los núcleos abren archivos, no documentos de Android); descomprime un .zip. */
-    private fun prepararRom(j: Juego): File {
-        if (j.uri.isBlank()) throw IOException("La ROM de «${j.titulo}» no está en este móvil")
+    private fun prepararRom(j: Juego, local: File? = null): File {
+        if (j.uri.isBlank() && local == null) throw IOException("La ROM de «${j.titulo}» no está en este móvil")
         val uri = Uri.parse(j.uri)
-        val doc = DocumentFile.fromSingleUri(this, uri)
-        val nombre = doc?.name ?: (j.archivo + "." + nucleoDef.extensiones.first())
-        val sello = "$nombre|${doc?.length() ?: -1}|${doc?.lastModified() ?: 0}"
+        val doc = if (local == null) DocumentFile.fromSingleUri(this, uri) else null
+        val nombre = local?.name ?: doc?.name ?: (j.archivo + "." + nucleoDef.extensiones.first())
+        val sello = if (local != null) "$nombre|${local.length()}|${local.lastModified()}" else "$nombre|${doc?.length() ?: -1}|${doc?.lastModified() ?: 0}"
+        fun abrir() = if (local != null) local.inputStream() else contentResolver.openInputStream(uri) ?: throw IOException("No se puede leer la ROM")
         val raiz = File(cacheDir, "rom")
         val dir = File(raiz, j.id)
         val marca = File(dir, ".sello")
@@ -246,7 +275,7 @@ class JuegoActivity : ComponentActivity() {
         val ext = nombre.substringAfterLast('.', "").lowercase()
         val destino: File = if (ext == "zip") {
             var hallado: File? = null
-            ZipInputStream(contentResolver.openInputStream(uri) ?: throw IOException("No se puede leer la ROM")).use { z ->
+            ZipInputStream(abrir()).use { z ->
                 while (true) {
                     val e = z.nextEntry ?: break
                     val n = e.name.substringAfterLast('/')
@@ -258,7 +287,7 @@ class JuegoActivity : ComponentActivity() {
             hallado ?: throw IOException("En ese .zip no hay ninguna ROM que ${nucleoDef.nombre} sepa abrir (${nucleoDef.extensiones.joinToString { ".$it" }})")
         } else {
             if (ext !in nucleoDef.extensiones) throw IOException("${nucleoDef.nombre} no abre archivos .$ext")
-            File(dir, nombre).also { f -> (contentResolver.openInputStream(uri) ?: throw IOException("No se puede leer la ROM")).use { i -> f.outputStream().use { i.copyTo(it) } } }
+            File(dir, nombre).also { f -> abrir().use { i -> f.outputStream().use { i.copyTo(it) } } }
         }
         marca.writeText(sello)
         return destino

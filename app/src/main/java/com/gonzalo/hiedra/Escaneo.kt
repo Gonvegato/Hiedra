@@ -17,9 +17,13 @@ object Escaneo {
     private const val MAX_PROFUNDIDAD = 8
     private const val MAX_ARCHIVOS = 20000
 
-    /** Pide a Android que se acuerde del permiso sobre este documento o carpeta (si no deja, se sigue sin él). */
+    /**
+     * Pide a Android que se acuerde del permiso sobre este documento o carpeta (si no deja, se sigue sin él). De escritura también si
+     * se puede: en la carpeta de ROMs se dejan las que bajes de tu kDrive.
+     */
     fun recordar(c: Context, uri: Uri) {
-        runCatching { c.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        runCatching { c.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) }
+            .onFailure { runCatching { c.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
     }
 
     /** Recorre una carpeta (y las de dentro) buscando archivos que algún sistema conozca. */

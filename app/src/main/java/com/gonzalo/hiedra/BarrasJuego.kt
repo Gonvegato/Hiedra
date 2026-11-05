@@ -21,13 +21,9 @@ fun diasJugados(juegos: List<Juego>): Map<String, Long> {
     return out
 }
 
-/** Días seguidos jugando (al menos un minuto), hasta hoy o hasta ayer. */
-fun rachaDeJuego(dias: Map<String, Long>, hoy: LocalDate = LocalDate.now()): Int {
-    var d = if ((dias[hoy.toString()] ?: 0L) >= 60_000L) hoy else hoy.minusDays(1)
-    var n = 0
-    while ((dias[d.toString()] ?: 0L) >= 60_000L) { n++; d = d.minusDays(1) }
-    return n
-}
+/** Días seguidos jugando, con la regla común de la familia ([Racha]: al menos un minuto; hasta hoy o hasta ayer). */
+fun rachaDeJuego(dias: Map<String, Long>, hoy: LocalDate = LocalDate.now()): Int =
+    Racha.dias(hoy.toEpochDay()) { Racha.cuentaTiempo(dias[LocalDate.ofEpochDay(it).toString()] ?: 0L) }
 
 /**
  * Entre la fecha y el menú, como en la portada de Atrio: lo jugado hoy, los días seguidos y la semana en barras (cada día, lo que jugaste).

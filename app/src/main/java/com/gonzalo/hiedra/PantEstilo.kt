@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.4.0"
+const val VERSION = "0.4.1"
 
 private fun aliasInicio(c: Context) = ComponentName(c, "com.gonzalo.hiedra.InicioAlias")
 private fun esInicio(c: Context) = c.packageManager.getComponentEnabledSetting(aliasInicio(c)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -233,8 +233,24 @@ private fun SeccionActualizaciones() {
     }
     if (conectado) {
         var solas by remember { mutableStateOf(NubeP.romsSolas(ctx)) }
-        Fila("Subir mis ROMs a mi kDrive", "Solas y solo con wifi, para tenerlas en tus otros móviles junto a sus guardados. Van a tu kDrive, no a ningún sitio público.") {
+        Fila("Subir mis ROMs a mi kDrive", "Solas y solo con wifi, en cuanto las añades, para tenerlas en tus otros móviles junto a sus guardados. Van a tu kDrive, no a ningún sitio público.") {
             Interruptor(solas) { solas = it; NubeP.ponRomsSolas(ctx, it); if (it) SubirRomsWorker.programar(ctx) }
+        }
+        // En este móvil, las que subiste desde otro
+        var faltan by remember { mutableStateOf<Int?>(null) }
+        var pedido by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) { faltan = withContext(Dispatchers.IO) { runCatching { NubeP.romsQueFaltan().size }.getOrNull() } }
+        val carpetaRoms = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { u ->
+            if (u != null) {
+                Escaneo.recordar(ctx, u)
+                if (Biblioteca.carpetas.none { it.uri == u.toString() }) { Biblioteca.carpetas.add(Carpeta(u.toString(), androidx.documentfile.provider.DocumentFile.fromTreeUri(ctx, u)?.name ?: "ROMs")); Biblioteca.guardar() }
+                if (NubeP.carpetaBajadas(ctx) != null) { BajarRomsWorker.programar(ctx); pedido = true }
+            }
+        }
+        val n = faltan
+        if (n != null && n > 0) MagLink(if (pedido) "Bajando ${if (n == 1) "la ROM que falta" else "las $n ROMs que faltan"} (con wifi)…" else "Bajar ${if (n == 1) "la ROM que falta" else "las $n ROMs que faltan"} en este móvil",
+            "Las que tienes en tu kDrive y aquí no. A tu carpeta de ROMs, cada una en la de su sistema; solo con wifi, y sigue sola aunque cierres Hiedra.") {
+            if (!pedido) { if (NubeP.carpetaBajadas(ctx) != null) { BajarRomsWorker.programar(ctx); pedido = true } else carpetaRoms.launch(null) }
         }
     }
     if (!conectado) {

@@ -55,6 +55,8 @@ suspend fun reescanearCarpetas(c: Context): Informe {
         val inf = Escaneo.importar(h, externos = android.os.Environment.getExternalStorageDirectory().absolutePath)
         a += inf.anadidos; r += inf.repetidos; sin += inf.sinSistema
     }
+    // Las ROMs nuevas, a tu kDrive (con wifi), para tenerlas en tus otros móviles
+    if (a > 0) SubirRomsWorker.programar(c)
     return Informe(a, r, sin)
 }
 
@@ -93,6 +95,8 @@ fun HojaAnadir(inicial: TipoLanzador?, vincularA: String? = null, alVincular: (J
 
     fun terminar(inf: Informe, antes: Int) {
         val total = antes + inf.anadidos
+        // Las ROMs nuevas, a tu kDrive (con wifi), para tenerlas en tus otros móviles
+        if (inf.anadidos > 0) SubirRomsWorker.programar(ctx)
         if (inf.sinSistema.isNotEmpty()) paso = Paso.Preguntar(inf.sinSistema, total)
         else paso = Paso.Resumen(resumen(total, inf.repetidos, 0) + vincular())
     }

@@ -38,20 +38,29 @@ fun HiedraApp(fichaPedida: String? = null, jugarPedido: Boolean = false, alAbrir
     var vincularA by remember { mutableStateOf<String?>(null) }
     /** Un juego del PC al que se va a jugar: se elige si en el PC o en streaming. */
     var jugarPc by remember { mutableStateOf<Juego?>(null) }
+    /** Un juego cuya ROM está en otro móvil: se baja de tu kDrive antes de jugar. */
+    var bajarRom by remember { mutableStateOf<Juego?>(null) }
     /** Una captura abierta a pantalla completa. */
     var captura by remember { mutableStateOf<Shot?>(null) }
     val d = Destino.entries[destino]
     // Un widget pide abrir la ficha de un juego
     LaunchedEffect(fichaPedida) {
         val j = fichaPedida?.let { Biblioteca.por(it) }
-        if (j != null) { if (jugarPedido && j.enPc) jugarPc = j else { fichaId = fichaPedida; destino = 0 } }
+        if (j != null) { if (jugarPedido && j.enPc) jugarPc = j else { fichaId = fichaPedida; destino = 0; if (jugarPedido && j.enOtroDispositivo) bajarRom = j } }
         if (fichaPedida != null) alAbrirPedida()
     }
     // Una captura recién llegada del PC se abre
     LaunchedEffect(Suite.arrived) { Suite.arrived?.let { captura = it; Suite.arrived = null } }
     LaunchedEffect(Suite.notice) { Suite.notice?.let { Lanzar.aviso(ctx, it); Suite.notice = null } }
 
-    fun jugar(j: Juego) { if (j.enPc) jugarPc = j else Lanzar.lanzar(ctx, j)?.let { Lanzar.aviso(ctx, it) } }
+    fun jugar(j: Juego) {
+        when {
+            j.enPc -> jugarPc = j
+            // La ROM está en otro de tus móviles: se baja de tu kDrive y se juega (el jugador de Hiedra la baja él solo)
+            j.enOtroDispositivo && !Lanzar.esInterno(Lanzar.elegir(ctx, j)) -> bajarRom = j
+            else -> Lanzar.lanzar(ctx, j)?.let { Lanzar.aviso(ctx, it) }
+        }
+    }
     fun abrirAnadir(t: TipoLanzador?, para: String? = null) { tipoInicial = t; vincularA = para; anadir = true }
     fun ir(x: Destino, buscando: Boolean = false) { buscar = buscando; destino = x.ordinal }
 
@@ -83,5 +92,6 @@ fun HiedraApp(fichaPedida: String? = null, jugarPedido: Boolean = false, alAbrir
     }
     BackHandler(enabled = captura != null) { captura = null }
     jugarPc?.let { j -> DialogoJugarPc(j) { jugarPc = null } }
+    bajarRom?.let { j -> DialogoBajarRom(j, jugar = true) { bajarRom = null } }
     if (anadir) HojaAnadir(tipoInicial, vincularA = vincularA, alVincular = { fichaId = it.id }) { anadir = false; vincularA = null }
 }
